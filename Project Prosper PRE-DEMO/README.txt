@@ -1,1 +1,0 @@
-To run the game, run the 'projectprosper.py' file.
