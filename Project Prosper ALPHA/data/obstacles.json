@@ -1,0 +1,9 @@
+[{"Type":"escape","Id":0,"DropsItem":null,"IsEntrance":true,"Script":"escape.py","Sprite":"misc\\none64.png","Animation":"objects\\tree","HarvestLevel":-1},
+{"Type":"tree","Id":1,"DropsItem":1,"IsEntrance":false,"Script":null,"Sprite":"objects\\tree\\tree.png","Animation":"objects\\tree","HarvestLevel":0},
+{"Type":"stone","Id":2,"DropsItem":3,"IsEntrance":false,"Script":null,"Sprite":"objects\\stone\\stone.png","Animation":"objects\\stone","HarvestLevel":0},
+{"Type":"bush","Id":3,"DropsItem":5,"IsEntrance":false,"Script":null,"Sprite":"objects\\bush\\bush.png","Animation":"objects\\bush","HarvestLevel":0},
+{"Type":"cactus","Id":4,"DropsItem":null,"IsEntrance":false,"Script":null,"Sprite":"objects\\cactus\\cactus.png","Animation":null,"HarvestLevel":0},
+{"Type":"mine","Id":5,"DropsItem":null,"IsEntrance":true,"Script":"mine.py","Sprite":"objects\\mine.png","Animation":null,"HarvestLevel":-1},
+{"Type":"caveWall","Id":6,"DropsItem":null,"IsEntrance":false,"Script":null,"Sprite":"objects\\caveWall.png","Animation":null,"HarvestLevel":5},
+{"Type":"caveWall2","Id":7,"DropsItem":null,"IsEntrance":false,"Script":null,"Sprite":"objects\\caveWall2.png","Animation":null,"HarvestLevel":5},
+{"Type":"caveWall3","Id":8,"DropsItem":null,"IsEntrance":false,"Script":null,"Sprite":"objects\\caveWall3.png","Animation":null,"HarvestLevel":5}]

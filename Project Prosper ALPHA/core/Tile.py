@@ -41,28 +41,28 @@ class Tile:
         if self.biome=='g':
             x=0
             y=0
-            possibilities=['none','none','none','tree','mine','none','none','bush','none','none']
+            possibilities=['none','none','none',1,5,'none','none',3,'none','none']
             for i in range(256):
                 self.isEntrance=False
                 type=random.choice(possibilities)
 
-                if type=='tree':
-                    dropsItem=1
+                if type==5:
+                    possibilities.remove(5)
                 elif type=='stone':
                     dropsItem=3
                 elif type=='bush':
                     dropsItem=5
                 elif type=='mine':
-                    possibilities.remove('mine')
+                    
                     dropsItem=None
                     self.structure=i
                     self.isEntrance=True
                 else:
                     dropsItem=0
                 if type=='tree':
-                    self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64-20,y*64),(64,64)),i,dropsItem))
+                    self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64-20,y*64),(64,64)),i))
                 else:
-                    self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i,dropsItem,self.isEntrance))
+                    self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i))
                 if x==15:
                     y+=1
                     x=0
@@ -74,7 +74,7 @@ class Tile:
             x=0
             y=0
             for i in range(256):
-                type=random.choice(['none','tree','bush'])
+                type=random.choice(['none',1,3])
                 if type=='tree':
                     dropsItem=1
                 elif type=='stone':
@@ -84,9 +84,9 @@ class Tile:
                 else:
                     dropsItem=0
                 if type=='tree':
-                    self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64-20,y*64),(64,64)),i,dropsItem))
+                    self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64-20,y*64),(64,64)),i))
                 else:
-                    self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i,dropsItem))
+                    self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i))
                 if x==15:
                     y+=1
                     x=0
@@ -105,7 +105,7 @@ class Tile:
                     dropsItem=3
                 else:
                     dropsItem=0
-                self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i,dropsItem))
+                self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i))
                 if x==15:
                     y+=1
                     x=0
@@ -117,14 +117,14 @@ class Tile:
             x=0
             y=0
             for i in range(256):
-                type=random.choice(['none','none','cactus'])
+                type=random.choice(['none','none',4])
                 if type=='tree':
                     dropsItem=1
                 elif type=='stone':
                     dropsItem=3
                 else:
                     dropsItem=0
-                self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i,dropsItem))
+                self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i))
                 if x==15:
                     y+=1
                     x=0
@@ -137,6 +137,6 @@ class Tile:
         screen.blit(self.color,(0,0))
         for obstaclee in self.obstacles:
             if obstaclee.type != 'none':
-                screen.blit(placedObjects[obstaclee.type],obstaclee.rect)     
+                screen.blit(obstaclee.sprite,obstaclee.rect)     
     def getObstacles(self):
         return self.obstacles

@@ -28,16 +28,12 @@ class Structure:
             x=0
             y=0
             for i in range(256):
-                type=random.choice(['none','none','none','caveWall','stone','caveWall','caveWall','stone','caveWall','none'])
+                type=random.choice(['none','none','none',6,2,6,7,2,8,'none'])
                 if i in self.safeZone:
                     type='none'
                 if i==self.escape:
                     type='escape'
-                if type=='stone':
-                    dropsItem=3
-                else:
-                    dropsItem=0
-                self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i,dropsItem))
+                self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i))
                 if x==15:
                     y+=1
                     x=0
@@ -51,7 +47,7 @@ class Structure:
         screen.blit(self.color,(0,0))
         for obstaclee in self.obstacles:
             if obstaclee.type != 'none':
-                screen.blit(placedObjects[obstaclee.type],obstaclee.rect)
+                screen.blit(obstaclee.sprite,obstaclee.rect)
             #if obstaclee.type=='tree':
             #    screen.blit(obstacle,obstaclee.rect)
             #elif obstaclee.type=='cactus':

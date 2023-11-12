@@ -1,4 +1,4 @@
-import pygame,PyEngine,random,time,ctypes
+import pygame,PyEngine,random,time,ctypes,os
 ctypes.windll.shcore.SetProcessDpiAwareness(0)
 #screen=pygame.display.set_mode((512,512))
 screen=pygame.display.set_mode((512,512))
@@ -192,17 +192,17 @@ woodSprite=pygame.image.load('items\\wood.png')
 obstacle=pygame.image.load('objects\\tree\\tree.png')
 stoneBig=pygame.image.load('objects\\stone\\stone.png')
 bushBig=pygame.image.load('objects\\bush\\bush.png')
-cactus=pygame.image.load('objects\\cactus.png')
+#cactus=pygame.image.load('objects\\cactus.png')
 woodWall=pygame.image.load('objects\\woodWall.png')
 caveWall=pygame.image.load(random.choice(['objects\\caveWall.png','objects\\caveWall2.png','objects\\caveWall3.png']))
 cave=pygame.image.load('objects\\mine.png')
 none64=pygame.image.load('misc\\none64.png')
 
-placedObjects={'tree':obstacle,'cactus':cactus,'woodWall':woodWall,'stone':stoneBig,'bush':bushBig,'caveWall':caveWall,'mine':cave,'escape':none64}
+#placedObjects={'tree':obstacle,'woodWall':woodWall,'stone':stoneBig,'bush':bushBig,'caveWall':caveWall,'mine':cave,'escape':none64}
 
-placedItemMap={'woodWall':2}
+#placedItemMap={'woodWall':2}
 
-placeItemMapRev={placedItemMap[i]:i for i in placedItemMap}
+#placeItemMapRev={placedItemMap[i]:i for i in placedItemMap}
 
 selectorPos=1
 debugInv=False
@@ -232,6 +232,7 @@ pygame.display.set_icon(pygame.image.load('misc\\icon.png'))
 recipes=PyEngine.load('data\\recipes.json')
 items=PyEngine.load('data\\items.json')
 blocks=PyEngine.load('data\\blocks.json')
+obstacleData=PyEngine.load('data\\obstacles.json')
 #0-17 Normal slots, 18-23 hotbar slots, 24+ crafting slots
 inventory=[{'Slot':0,'Item':None,'Amount':0},{'Slot':1,'Item':None,'Amount':0},{'Slot':2,'Item':None,'Amount':0},{'Slot':3,'Item':None,'Amount':0},{'Slot':4,'Item':None,'Amount':0},{'Slot':5,'Item':None,'Amount':0},{'Slot':6,'Item':None,'Amount':0},{'Slot':7,'Item':None,'Amount':0},{'Slot':8,'Item':None,'Amount':0},{'Slot':9,'Item':None,'Amount':0},{'Slot':10,'Item':None,'Amount':0},{'Slot':11,'Item':None,'Amount':0},{'Slot':12,'Item':None,'Amount':0},{'Slot':13,'Item':None,'Amount':0},{'Slot':14,'Item':None,'Amount':0},{'Slot':15,'Item':None,'Amount':0},{'Slot':16,'Item':None,'Amount':0},{'Slot':17,'Item':None,'Amount':0},{'Slot':18,'Item':None,'Amount':0},{'Slot':19,'Item':None,'Amount':0},{'Slot':20,'Item':None,'Amount':0},{'Slot':21,'Item':None,'Amount':0},{'Slot':22,'Item':None,'Amount':0},{'Slot':23,'Item':None,'Amount':0},{'Slot':24,'Item':None,'Amount':0},{'Slot':25,'Item':None,'Amount':0},{'Slot':26,'Item':None,'Amount':0},{'Slot':27,'Item':None,'Amount':0},{'Slot':28,'Item':None,'Amount':0},{'Slot':29,'Item':None,'Amount':0},{'Slot':30,'Item':None,'Amount':0},{'Slot':31,'Item':None,'Amount':0},{'Slot':32,'Item':None,'Amount':0},{'Slot':33,'Item':None,'Amount':0}]
 def customRound(x,base):
@@ -475,6 +476,9 @@ while True:
             if keys[pygame.K_F3]:
                 #Reload Classes
                 exec(compile(open('core\\Player.py').read(),'core\\Player.py','exec'),globals())
+                x,y=player.x,player.y
+                player=Player(x,y)
+                player.id=currentTile.id
                 exec(compile(open('core\\Item.py').read(),'core\\Item.py','exec'),globals())
                 itemObjs.clear()
                 for item in items:
@@ -484,6 +488,7 @@ while True:
                 for recipe in recipes:
                     recipeObjs.append(Recipe(recipe['Id']))
                 exec(compile(open('core\\Obstacle.py').read(),'core\\Obstacle.py','exec'),globals())
+                currentTile.createObstacles()
                 exec(compile(open('core\\Tile.py').read(),'core\\Tile.py','exec'),globals())
                 exec(compile(open('core\\Block.py').read(),'core\\Block.py','exec'),globals())
                 exec(compile(open('core\\Structure.py').read(),'core\\Structure.py','exec'),globals())
@@ -503,7 +508,7 @@ while True:
                         if block.parentItem==getItem(currentItem['Item']):
                             currentBlock=block
                             for i in range(len(obstacles)):
-                                obData=obstacles[i].checkCollisionDamage(mouseRect,None,False,False,False)
+                                obData=obstacles[i].checkCollisionDamage(mouseRect,False,False,False)
                                 #print(obData)
                                 if obData!=False:
                                     if obData[0]:
@@ -516,7 +521,7 @@ while True:
                                         break
             if event.dict['button']==3:
                 for obstacle in obstacles:
-                    obData=obstacle.checkCollisionDamage(mouseRect,None,False,False,False)
+                    obData=obstacle.checkCollisionDamage(mouseRect,False,False,False)
                     if obData!=False:
                         if obData[0]:
                             obstacle.interact()                   
@@ -542,23 +547,13 @@ while True:
                     clock.tick(16)
                 slashRect=pygame.rect.Rect(player.x+20,player.y,32,32)
                 for ob in obstacles:
-                    if ob.type=='tree':
-                        droppedItems.append(ob.checkCollisionDamage(slashRect,tree,True,True,True))
-                        droppedItems.append(droppedItems[-1])
-                    if ob.type=='stone':
-                        droppedItems.append(ob.checkCollisionDamage(slashRect,stone,True,True,True)) 
-                        droppedItems.append(droppedItems[-1])
-                    if ob.type=='bush':
-                        droppedItems.append(ob.checkCollisionDamage(slashRect,bush,True,True,True))
-                        droppedItems.append(droppedItems[-1])
+                    droppedItems.append(ob.checkCollisionDamage(slashRect,True,True,True))
+                    droppedItems.append(droppedItems[-1])
             elif event.dict['button']==1 and currentItem['Item']==None: 
-                        for ob in obstacles:
-                            if ob.type=='tree':
-                                droppedItems.append(ob.checkCollisionDamage(mouseRect,tree,True,True,True))
-                            if ob.type=='stone':
-                                droppedItems.append(ob.checkCollisionDamage(mouseRect,stone,True,True,True)) 
-                            if ob.type=='bush':
-                                droppedItems.append(ob.checkCollisionDamage(mouseRect,bush,True,True,True))   
+                for ob in obstacles:
+                    if ob.harvestLevel!=-1:
+                        if ob.harvestLevel==0:
+                            droppedItems.append(ob.checkCollisionDamage(mouseRect,True,True,True))   
             elif pygame.mouse.get_pos().__getitem__(0)<=player.x and event.dict['button']==1 and currentItem['Item']==8:
                 for frame in range(len(slashL)):
                     screen.fill('white')
@@ -670,7 +665,7 @@ while True:
                 if block.parentItem==getItem(currentItem['Item']):
                     currentBlock=block
                     for i in range(len(obstacles)):
-                        if obstacles[i].checkCollisionDamage(mouseRect,None,False,False,False):
+                        if obstacles[i].checkCollisionDamage(mouseRect,False,False,False):
                             hover=currentBlock.sprite.copy()
                             hover.set_alpha(130)
                             screen.blit(hover,(customRound(mouseRect.left,64),customRound(mouseRect.top,64)))
