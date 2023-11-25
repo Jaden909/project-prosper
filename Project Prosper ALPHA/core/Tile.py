@@ -6,13 +6,25 @@ class Tile:
         self.obRects=[]
         #Append new tiles with the cave biome and bind them to the entrances
         if self.biome=='g':
-            self.color=pygame.image.load('biomes\\grass.png')
+            if sys.platform=='windows':
+                self.color=pygame.image.load('biomes\\grass.png')
+            elif sys.platform=='linux':
+                self.color=pygame.image.load('biomes/grass.png')
         elif self.biome=='f':
-            self.color=pygame.image.load('biomes\\forest.png')
+            if sys.platform=='windows':
+                self.color=pygame.image.load('biomes\\forest.png')
+            elif sys.platform=='linux':
+                self.color=pygame.image.load('biomes/forest.png')
         elif self.biome=='d':
-            self.color=pygame.image.load('biomes\\desert.png')
+            if sys.platform=='windows':
+                self.color=pygame.image.load('biomes\\desert.png')
+            elif sys.platform=='linux':
+                self.color=pygame.image.load('biomes/desert.png')
         elif self.biome=='o':
-            self.color=pygame.image.load('biomes\\ocean.png')   
+            if sys.platform=='windows':
+                self.color=pygame.image.load('biomes\\ocean.png')
+            elif sys.platform=='linux':
+                self.color=pygame.image.load('biomes/ocean.png')  
         self.id=id
         if mapMode:
             self.tileRect=pygame.Rect(self.x,self.y,32,32)
@@ -35,31 +47,17 @@ class Tile:
         else:
             return False
     def createObstacles(self):
-        global seed
+        #print(f'Tile {self.id}: Starting obstacles creation')
+        global seed,tilesLoaded
         self.obstacles=[]
         self.structure=None
         if self.biome=='g':
             x=0
             y=0
-            possibilities=['none','none','none',1,5,'none','none',3,'none','none']
+            possibilities=['none','none','none',1,'none','none','none',3,'none','none']
             for i in range(256):
-                self.isEntrance=False
                 type=random.choice(possibilities)
-
-                if type==5:
-                    possibilities.remove(5)
-                elif type=='stone':
-                    dropsItem=3
-                elif type=='bush':
-                    dropsItem=5
-                elif type=='mine':
-                    
-                    dropsItem=None
-                    self.structure=i
-                    self.isEntrance=True
-                else:
-                    dropsItem=0
-                if type=='tree':
+                if type==1:
                     self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64-20,y*64),(64,64)),i))
                 else:
                     self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i))
@@ -69,7 +67,14 @@ class Tile:
                     if y==32:
                         break
                     continue 
-                x+=1 
+                x+=1
+            z=random.choice(range(256)) 
+            w=self.obstacles.pop(z)
+            self.obstacles.insert(z,Obstacle(5,w.rect,i))
+            self.obstacles.insert(z,Obstacle(5,w.rect,i))
+            for ob in self.obstacles:
+                print(ob.type)
+            #print(self.obstacles)
         elif self.biome=='f':
             x=0
             y=0
@@ -83,7 +88,7 @@ class Tile:
                     dropsItem=5
                 else:
                     dropsItem=0
-                if type=='tree':
+                if type==1:
                     self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64-20,y*64),(64,64)),i))
                 else:
                     self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i))
@@ -131,7 +136,9 @@ class Tile:
                     if y==32:
                         break
                     continue 
-                x+=1 
+                x+=1
+        tilesLoaded+=1 
+        #print(f'Tile {self.id}: finished obstacle creation')
     def loadTile(self):
         global obRects
         screen.blit(self.color,(0,0))

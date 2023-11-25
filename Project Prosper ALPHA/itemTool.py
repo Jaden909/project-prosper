@@ -39,7 +39,7 @@ def saveRecipe():
 def itemList():
     itemListWin=CTk()
     itemListWin.title('Item List')
-    itemListWin.geometry('200x400')
+    itemListWin.geometry('200x600')
     CTkLabel(itemListWin,text='Name').grid(column=1,row=0)
     CTkLabel(itemListWin,text='Icon').grid(column=2,row=0,padx=30)
     CTkLabel(itemListWin,text='Id').grid(column=3,row=0)

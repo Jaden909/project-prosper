@@ -1,1 +1,1 @@
-[{"Name":"woodWall","Id":0,"ParentId":2,"Sprite":"objects\\woodWall.png","Script":"hello"}]
+[{"Name": "woodWall", "Id": 0, "ParentId": 2, "Sprite": "objects\\woodWall.png", "Script": "hello"}, {"Name": "Stone Stove", "Id": 1, "ParentId": 12, "Sprite": "objects\\stove.png", "Script": "stove"}]

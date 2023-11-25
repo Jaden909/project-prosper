@@ -1,30 +1,48 @@
 class Obstacle:
     def __init__(self,id,rect,posid) -> None:
+        global obCache
         if id!='none' and id!='escape':
+            self.id=id
             self.data=obstacleData[id]
             self.type=self.data['Type']
+            
+            self.parentItem=self.data['ParentId']
             self.dropsItem=self.data['DropsItem']
             self.isEntrance=self.data['IsEntrance']
             self.scriptFile=self.data['Script']
-            self.sprite=pygame.image.load(self.data['Sprite'])
+            if self.data['Sprite']in obCache.keys():
+                self.sprite=obCache[self.data['Sprite']] 
+            else:
+                self.sprite=pygame.image.load(self.data['Sprite'])
+                obCache[self.data['Sprite']]=self.sprite
+            print(sys.getsizeof(self.sprite))  
             self.harvestLevel=self.data['HarvestLevel']
             if self.data['Animation'] is not None:
                 for root, dirs, files in os.walk(f'{self.data["Animation"]}'):
                     for name in dirs:
-                        self.sprites=os.listdir(self.data['Animation']+'\\'+name)
+                        if sys.platform=='windows':
+                            self.sprites=os.listdir(self.data['Animation']+'\\'+name)
+                        elif sys.platform=='linux':
+                            self.sprites=os.listdir(self.data['Animation']+'/'+name)
                 self.animation=[]
-                for sprite in self.sprites:
-                    self.animation.append(pygame.image.load(self.data['Animation']+'\\'+name+'\\'+sprite))
+                if sys.platform=='windows':
+                    for sprite in self.sprites:
+                        self.animation.append(pygame.image.load(self.data['Animation']+'\\'+name+'\\'+sprite))
+                elif sys.platform=='linux':
+                    for sprite in self.sprites:
+                        self.animation.append(pygame.image.load(self.data['Animation']+'/'+name+'/'+sprite))
             else:
                 self.animation=None
         elif id=='none':
             self.type='none'
+            self.id='none'
             self.dropsItem=None
             self.isEntrance=None
             self.scriptFile=None
             self.sprite=None
             self.animation=None
             self.harvestLevel=-1
+            self.parentItem=None
         elif id=='escape':
             self.data=obstacleData[0]
             self.type=self.data['Type']
@@ -35,7 +53,12 @@ class Obstacle:
             self.animation=None
             self.harvestLevel=self.data['HarvestLevel']
         if self.scriptFile is not None:
-            self.script=compile(open(f'scripts\\{self.scriptFile}').read(),self.scriptFile,'exec')
+            if sys.platform=='windows':
+                self.script=compile(open(f'scripts\\{self.scriptFile}').read(),self.scriptFile,'exec')
+            elif sys.platform=='linux':
+                self.script=compile(open(f'scripts/{self.scriptFile}').read(),self.scriptFile,'exec')
+            print(sys.getsizeof(self.script))
+         
         else:
             self.script=None
         self.posid=posid
@@ -95,11 +118,15 @@ class Obstacle:
                     clock.tick(8)
             if getLocation:
                 #print(self.dropsItem)
+                if eventActive:
+                    if random.randint(0,10)==0:
+                        return {'Type':random.choice(eventItems),'Position':self.rect}
                 return {'Type':self.dropsItem,'Position':self.rect}
             return True,self.type
         return False
     def interact(self):
-        global entrancePos
+        global entrancePos,cOb
+        cOb=self
         if self.isEntrance:
             entrancePos=(self.rect)
         if self.script is not None:
