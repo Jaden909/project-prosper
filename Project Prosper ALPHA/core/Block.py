@@ -1,3 +1,4 @@
+#DEPRECATED
 class Block(Obstacle):
     def __init__(self,id):
         self.id=id

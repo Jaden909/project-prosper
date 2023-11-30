@@ -5,7 +5,7 @@ class Item:
         self.name=self.data['Name']
         self.maxStackSize=self.data['MaxStackSize']
         self.spriteLocation=self.data['Sprite']
-        if sys.platform=='windows':
+        if sys.platform=='win32':
             self.sprite=pygame.image.load('items\\'+self.spriteLocation)
         elif sys.platform=='linux':
             self.sprite=pygame.image.load('items/'+self.spriteLocation)

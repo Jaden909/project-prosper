@@ -21,7 +21,9 @@ def emuSeason(items):
     global eventActive,eventItems
     eventActive=True
     eventItems=items
-emuSeason([14])
+    
+#Use to emulate seasonal events
+#emuSeason([14])
 
 cOb=None
 #level0=pygame.image.load('levelPlan.png')

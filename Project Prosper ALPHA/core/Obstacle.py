@@ -15,17 +15,17 @@ class Obstacle:
             else:
                 self.sprite=pygame.image.load(self.data['Sprite'])
                 obCache[self.data['Sprite']]=self.sprite
-            print(sys.getsizeof(self.sprite))  
+            #print(sys.getsizeof(self.sprite))  
             self.harvestLevel=self.data['HarvestLevel']
             if self.data['Animation'] is not None:
                 for root, dirs, files in os.walk(f'{self.data["Animation"]}'):
                     for name in dirs:
-                        if sys.platform=='windows':
+                        if sys.platform=='win32':
                             self.sprites=os.listdir(self.data['Animation']+'\\'+name)
                         elif sys.platform=='linux':
                             self.sprites=os.listdir(self.data['Animation']+'/'+name)
                 self.animation=[]
-                if sys.platform=='windows':
+                if sys.platform=='win32':
                     for sprite in self.sprites:
                         self.animation.append(pygame.image.load(self.data['Animation']+'\\'+name+'\\'+sprite))
                 elif sys.platform=='linux':
@@ -53,11 +53,10 @@ class Obstacle:
             self.animation=None
             self.harvestLevel=self.data['HarvestLevel']
         if self.scriptFile is not None:
-            if sys.platform=='windows':
+            if sys.platform=='win32':
                 self.script=compile(open(f'scripts\\{self.scriptFile}').read(),self.scriptFile,'exec')
             elif sys.platform=='linux':
                 self.script=compile(open(f'scripts/{self.scriptFile}').read(),self.scriptFile,'exec')
-            print(sys.getsizeof(self.script))
          
         else:
             self.script=None

@@ -9,7 +9,7 @@ class Structure:
             self.safeZone=[]
         #Append new tiles with the cave biome and bind them to the entrances
         if self.type=='cave':
-            if sys.platform=='windows':
+            if sys.platform=='win32':
                 self.color=pygame.image.load('biomes\\cave.png')
             elif sys.platform=='linux':
                 self.color=pygame.image.load('biomes/cave.png')

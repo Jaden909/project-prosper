@@ -6,22 +6,22 @@ class Tile:
         self.obRects=[]
         #Append new tiles with the cave biome and bind them to the entrances
         if self.biome=='g':
-            if sys.platform=='windows':
+            if sys.platform=='win32':
                 self.color=pygame.image.load('biomes\\grass.png')
             elif sys.platform=='linux':
                 self.color=pygame.image.load('biomes/grass.png')
         elif self.biome=='f':
-            if sys.platform=='windows':
+            if sys.platform=='win32':
                 self.color=pygame.image.load('biomes\\forest.png')
             elif sys.platform=='linux':
                 self.color=pygame.image.load('biomes/forest.png')
         elif self.biome=='d':
-            if sys.platform=='windows':
+            if sys.platform=='win32':
                 self.color=pygame.image.load('biomes\\desert.png')
             elif sys.platform=='linux':
                 self.color=pygame.image.load('biomes/desert.png')
         elif self.biome=='o':
-            if sys.platform=='windows':
+            if sys.platform=='win32':
                 self.color=pygame.image.load('biomes\\ocean.png')
             elif sys.platform=='linux':
                 self.color=pygame.image.load('biomes/ocean.png')  
