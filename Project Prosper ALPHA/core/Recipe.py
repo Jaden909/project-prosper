@@ -7,6 +7,7 @@ class Recipe:
         self.output=self.data['Output']
         self.shapeless=self.data['Shapeless']
         self.count=self.data['Count']
+        self.type=self.data['type']
         self.items=[]
         self.craftItems=[]
     def checkRecipe(self,craftingInv:list):

@@ -10,6 +10,7 @@ class Obstacle:
             self.dropsItem=self.data['DropsItem']
             self.isEntrance=self.data['IsEntrance']
             self.scriptFile=self.data['Script']
+            self.blockMovement=self.data['BlockMovement']
             if self.data['Sprite']in obCache.keys():
                 self.sprite=obCache[self.data['Sprite']] 
             else:
@@ -43,6 +44,7 @@ class Obstacle:
             self.animation=None
             self.harvestLevel=-1
             self.parentItem=None
+            self.blockMovement=False
         elif id=='escape':
             self.data=obstacleData[0]
             self.type=self.data['Type']
@@ -52,6 +54,7 @@ class Obstacle:
             self.sprite=pygame.image.load(self.data['Sprite'])
             self.animation=None
             self.harvestLevel=self.data['HarvestLevel']
+            self.blockMovement=False
         if self.scriptFile is not None:
             if sys.platform=='win32':
                 self.script=compile(open(f'scripts\\{self.scriptFile}').read(),self.scriptFile,'exec')

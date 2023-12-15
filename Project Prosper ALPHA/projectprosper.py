@@ -1,6 +1,6 @@
-import pygame,PyEngine,random,time,ctypes,os,sys,tracemalloc
-tracemalloc.start()
+import pygame,PyEngine,random,time,ctypes,os,sys,threading
 ctypes.windll.shcore.SetProcessDpiAwareness(0)
+pygame.init()
 #screen=pygame.display.set_mode((512,512))
 screen=pygame.display.set_mode((512,512))
 pygame.display.set_caption('Project Prosper','idk')
@@ -10,30 +10,35 @@ horn2=pygame.mixer.Sound('sfx\\horn2.wav')
 horn3=pygame.mixer.Sound('sfx\\horn3.wav')
 horns=[horn0,horn1,horn2,horn3]
 
+
 #Seasonal Events
 currentTime=time.localtime()
 eventActive=False
+#xmas=False
 print(currentTime[1],currentTime[2])
 if currentTime[1]==12 and currentTime[2]==1:
     eventItems=[14]
     eventActive=True
+elif currentTime[1]==12 and currentTime[2] in range(15,25):
+    xmas=True
+    eventActive=True
+    eventItems=[17]
 def emuSeason(items):
     global eventActive,eventItems
     eventActive=True
     eventItems=items
     
 #Use to emulate seasonal events
-#emuSeason([14])
-
+#emuSeason([17])
+smeltDone=False  
 cOb=None
-#level0=pygame.image.load('levelPlan.png')
-#level1=pygame.image.load('levelPlan.png')
-pygame.init()
+fueled=False
 font=pygame.font.Font('Coure.fon',15)
 fastStart=False
 newGameStart=False
 gameStarting=False
 seed=None
+currentRecipe=None
 done=False
 inStruct=False
 tilesLoaded=0
@@ -41,7 +46,7 @@ smeltOpen=False
 obCache={}
 fuel=0
 maxFuel=0
-ver=PyEngine.TextBox('Project Prosper DEMO BUILD',0,487,25,200,'coure.fon',15,False,False,'white','black','white',3,(5,5))
+ver=PyEngine.TextBox('Project Prosper ALPHA BUILD',0,487,25,200,'coure.fon',15,False,False,'white','black','white',3,(5,5))
 def newGameToggle():
     global newGameStart
     newGameStart=True
@@ -62,26 +67,25 @@ def setDistribution(value):
     global distribution
     distribution=value
 def startGame():
-    global gameStarting,seed,start,newGameToggle,newGame,options,setDistribution,tips,tipLines,mainMenuImg,mainMenuOverlay,tipOverlay,newGameButt,optionsButt,exitButt,seedEntry,equalButt,oceansButt,balancedButt,createWorldButt
+    global gameStarting,seed,start,newGameToggle,newGame,options,setDistribution,mainMenuImg,mainMenuOverlay,newGameButt,optionsButt,exitButt,seedEntry,equalButt,oceansButt,balancedButt,createWorldButt
     gameStarting=True
     if seedText!='':
         seed=int(seedText)
     pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
-    del newGameToggle,newGame,options,setDistribution,tips,tipLines,mainMenuImg,mainMenuOverlay,tipOverlay,newGameButt,optionsButt,exitButt,seedEntry,equalButt,oceansButt,balancedButt,createWorldButt
+    del newGameToggle,newGame,options,setDistribution,mainMenuImg,mainMenuOverlay,newGameButt,optionsButt,exitButt,seedEntry,equalButt,oceansButt,balancedButt,createWorldButt
     screen.fill('black')
     screen.blit(font.render('Generating World...',True,'white'),(200,220))
     pygame.display.update()
     start=time.time()
 if not fastStart:
-    tips=PyEngine.load('data\\tips.json')
-    tip=random.choice(tips)
-    tipLines=PyEngine.autoWrap('Tip: '+tip,480,font,'white')
-    mainMenuImg=pygame.image.load('misc\\mainMenu.png')
-    projectImg=pygame.image.load('misc\\project.png')
+    if not xmas:
+        mainMenuImg=pygame.image.load('misc\\mainMenu.png')
+        projectImg=pygame.image.load('misc\\project.png')
+    else:
+        mainMenuImg=pygame.image.load('misc\\mainMenuXmas.png')
+        projectImg=pygame.image.load('misc\\projectXmas.png')
     prosperImg=pygame.image.load('misc\\prosper.png')
     mainMenuOverlay=pygame.image.load('misc\\mainMenuOverlay.png')
-    tipOverlay=pygame.image.load('misc\\tipOverlay.png')
-    tipOverlay.set_alpha(150)
     mainMenuOverlay.set_alpha(150)
     newGameButt=PyEngine.GameButton(200,325,newGameToggle,'default',True,True,'default',64,'misc\\button.png',120,40,None,'misc\\buttonAlt.png')
     optionsButt=PyEngine.GameButton(200,380,options,'default',True,True,'default',64,'misc\\button.png',120,40,None,'misc\\buttonAlt.png')
@@ -142,9 +146,8 @@ if not fastStart:
             for i in range(len(balText)):
                 screen.blit(balText[i],(335,200+i*20))    
             screen.blit(font.render('Create World',True,'white'),(210,325))
-            screen.blit(tipOverlay,(5,360))
-            for i in range(len(tipLines)):
-                screen.blit(tipLines[i],(10,370+20*i))
+            #screen.blit(tipOverlay,(5,360))
+            
         ver.render(screen)
         pygame.display.update()
 #print(pygame.font.get_fonts())
@@ -245,6 +248,11 @@ clock=pygame.time.Clock()
 
 def generate():
     global screen,seed,distribution,start,structures
+    tips=PyEngine.load('data\\tips.json')
+    tip=random.choice(tips)
+    tipLines=PyEngine.autoWrap('Tip: '+tip,480,font,'white')
+    tipOverlay=pygame.image.load('misc\\tipOverlay.png')
+    tipOverlay.set_alpha(150)
     print('Starting World Gen...')
     levelMap=[]
     if fastStart:
@@ -373,6 +381,10 @@ def generate():
             screen.blit(progressBar,(150,400))
             screen.blit(font.render('Generating World...',True,'white'),(200,220))
             screen.blit(font.render(f'Loaded Tile {tilesLoaded} out of 255',True,'white'),(150,450))
+            
+            for i in range(len(tipLines)):
+                screen.blit(tipLines[i],(25,25+i*25))
+
             pygame.display.update() 
         for tile in tiles:
             print(sys.getsizeof(tile.obstacles))     
@@ -431,12 +443,8 @@ def loadLevel(level):
             continue
         x+=1
 level=generate()
-snapshot = tracemalloc.take_snapshot()
-top_stats = snapshot.statistics('lineno')
 
-print("[ Top All ]")
-for stat in top_stats:
-    print(len(top_stats))
+
 
 player=Player(256,256)
 player.id=128
@@ -511,6 +519,7 @@ def blitItems():
         tBox.update(getItem(inventory[slotHover]['Item']).name)
         tBox.snapToMouse(512)
         tBox.render(screen,True)
+
 while True:
     screen.fill('white')
     currentTile=None
@@ -585,10 +594,12 @@ while True:
                 exec(compile(open('core\\Obstacle.py').read(),'core\\Obstacle.py','exec'),globals())
                 currentTile.createObstacles()
                 exec(compile(open('core\\Tile.py').read(),'core\\Tile.py','exec'),globals())
-                exec(compile(open('core\\Block.py').read(),'core\\Block.py','exec'),globals())
+                #exec(compile(open('core\\Block.py').read(),'core\\Block.py','exec'),globals())
                 exec(compile(open('core\\Structure.py').read(),'core\\Structure.py','exec'),globals())
-                for block in blocks:
-                    blockObjs.append(Block(block['Id']))
+                #for block in blocks:
+                #    blockObjs.append(Block(block['Id']))
+            if keys[pygame.K_SLASH]:
+                print('Commands')
             if keys[pygame.K_e]:
                 if smeltOpen:
                     smeltOpen=False
@@ -605,6 +616,7 @@ while True:
                     #print('ur mom')
                     for block in obstacleData:
                         if block['ParentId']==currentItem['Item']:
+                            print(block['ParentId'],currentItem['Item'])
                             print('place')
                             currentBlock=block
                             for i in range(len(obstacles)):
@@ -624,6 +636,7 @@ while True:
                                         if currentItem['Amount']==0:
                                             currentItem['Item']=None
                                         break
+                            break
             if event.dict['button']==3:
                 for obstacle in obstacles:
                     obData=obstacle.checkCollisionDamage(mouseRect,False,False,False)
@@ -773,7 +786,7 @@ while True:
                 #3 = RMB
                 if event.dict['button']==1:
                     #If output clicked
-                    if slotHover==33 and inventory[slotHover]['Item']is not None and not holdingItem and valid and slotHover in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31]:
+                    if slotHover==33 and inventory[slotHover]['Item']is not None and not holdingItem and valid and slotHover in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31,33]:
                         holdingItem=True
                         heldItem=getItem(inventory[slotHover]['Item'])
                         heldItemAmount=inventory[slotHover]['Amount']
@@ -782,18 +795,18 @@ while True:
                     elif slotHover==33 and holdingItem:
                         pass
                     #If slot with a item clicked empty handed
-                    elif slotHover>-1 and inventory[slotHover]['Item']is not None and not holdingItem and slotHover in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31]:
+                    elif slotHover>-1 and inventory[slotHover]['Item']is not None and not holdingItem and slotHover in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31,33]:
                         holdingItem=True
                         heldItem=getItem(inventory[slotHover]['Item'])
                         heldItemAmount=inventory[slotHover]['Amount']
                         inventory[slotHover]['Item']=None
                         inventory[slotHover]['Amount']=0
                     #1Add item count if possible
-                    elif slotHover>-1 and inventory[slotHover]['Item']==heldItem.itemId and holdingItem and inventory[slotHover]['Amount']+heldItemAmount<=heldItem.maxStackSize and slotHover in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31]:
+                    elif slotHover>-1 and inventory[slotHover]['Item']==heldItem.itemId and holdingItem and inventory[slotHover]['Amount']+heldItemAmount<=heldItem.maxStackSize and slotHover in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31,33]:
                         holdingItem=False
                         inventory[slotHover]['Amount']+=heldItemAmount
                     #1Switch held item
-                    elif slotHover>-1 and inventory[slotHover]['Item']!=heldItem.itemId and inventory[slotHover]['Item']is not None and holdingItem and slotHover in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31]:
+                    elif slotHover>-1 and inventory[slotHover]['Item']!=heldItem.itemId and inventory[slotHover]['Item']is not None and holdingItem and slotHover in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31,33]:
                         if slotHover==31:
                             if 'solidFuel' in heldItem.tags:
                                 tempItem=heldItem
@@ -811,7 +824,7 @@ while True:
                             inventory[slotHover]['Amount']=tempItemAmount
                         #Drop item if click outside inventory area
                     #1Place item in empty slot
-                    elif slotHover>-1 and inventory[slotHover]['Item']is None and holdingItem and inventory[slotHover]['Amount']<=heldItem.maxStackSize and slotHover in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31]:
+                    elif slotHover>-1 and inventory[slotHover]['Item']is None and holdingItem and inventory[slotHover]['Amount']<=heldItem.maxStackSize and slotHover in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31,33]:
                         if slotHover==31:
                             if 'solidFuel' in heldItem.tags:
                                 holdingItem=False
@@ -822,7 +835,7 @@ while True:
                             inventory[slotHover]['Item']=heldItem.itemId
                             inventory[slotHover]['Amount']=heldItemAmount
                 if event.dict['button']==3:
-                    if slotHover>-1 and inventory[slotHover]['Item']is not None and not holdingItem and slotHover in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31]:
+                    if slotHover>-1 and inventory[slotHover]['Item']is not None and not holdingItem and slotHover in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31,33]:
                         holdingItem=True
                         heldItem=getItem(inventory[slotHover]['Item'])
                         heldItemAmount=1
@@ -830,7 +843,7 @@ while True:
                         if inventory[slotHover]['Amount']<=0:
                             inventory[slotHover]['Item']=None
                     #1Stacking RMB
-                    elif slotHover>-1 and inventory[slotHover]['Item']==heldItem.itemId and holdingItem and inventory[slotHover]['Amount']+heldItemAmount<=heldItem.maxStackSize and slotHover in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31]:
+                    elif slotHover>-1 and inventory[slotHover]['Item']==heldItem.itemId and holdingItem and inventory[slotHover]['Amount']+heldItemAmount<=heldItem.maxStackSize and slotHover in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31,33]:
                         if slotHover==31:
                             if 'solidFuel' in heldItem.tags:
                                 holdingItem=False
@@ -839,7 +852,7 @@ while True:
                             holdingItem=False
                             inventory[slotHover]['Amount']+=heldItemAmount
                     #1Place 1 Item in empty slot
-                    elif slotHover>-1 and inventory[slotHover]['Item']is None and holdingItem and inventory[slotHover]['Amount']<=heldItem.maxStackSize and slotHover in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31]:
+                    elif slotHover>-1 and inventory[slotHover]['Item']is None and holdingItem and inventory[slotHover]['Amount']<=heldItem.maxStackSize and slotHover in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,31,33]:
                         if slotHover==31:
                             if 'solidFuel' in heldItem.tags:
                                 heldItemAmount-=1
@@ -855,18 +868,12 @@ while True:
                             inventory[slotHover]['Amount']+=1
     mouseRect=pygame.Rect((pygame.mouse.get_pos()[0]-16,pygame.mouse.get_pos()[1]-16),(8,8))
     if currentItem['Item'] is not None:
-
         if getItem(currentItem['Item']).type=='Block':
-
             for block in obstacleData:
-
                 if block['ParentId']==currentItem['Item']:
-
                     currentBlock=block
                     for i in range(len(obstacles)):
-
                         if obstacles[i].checkCollisionDamage(mouseRect,False,False,False):
-
                             hover=pygame.image.load(currentBlock['Sprite'])
                             hover.set_alpha(130)
                             screen.blit(hover,(customRound(mouseRect.left,64),customRound(mouseRect.top,64)))
@@ -904,6 +911,25 @@ while True:
             inventory[31]['Amount']-=1
             if inventory[31]['Amount']<=0:
                 inventory[31]['Item']=None
+        if inventory[25]['Item'] is not None and fueled:
+            for recipe in smeltRecipes:
+                if recipe.checkRecipe([inventory[25]['Item']]):
+                    threading.Thread(target=smelt).start()
+                    smelting=True
+                    currentRecipe=recipe
+            if smeltDone:  
+                smeltDone=False      
+                inventory[33]['Item']=currentRecipe.output
+                inventory[33]['Amount']=currentRecipe.count
+                valid=True
+                inventory[25]['Amount']-=1
+                if inventory[25]['Amount']==0:
+                    inventory[25]['Item']=None
+            else:
+                inventory[33]['Item']=None
+                inventory[33]['Amount']=0
+                valid=False
+                    
     else:
         #Hot bar
         currentItem=inventory[selectorPos+17]
@@ -937,21 +963,23 @@ while True:
         fuel-=1
         if fuel/maxFuel==0:
             currentSmelt=smelt5
+            fueled=False
         elif fuel/maxFuel <0.2:
             currentSmelt=smelt4
+            fueled=True
         elif fuel/maxFuel <0.4:
             currentSmelt=smelt3
+            fueled=True
         elif fuel/maxFuel <0.6:
             currentSmelt=smelt2
+            fueled=True
         elif fuel/maxFuel <0.8:
             currentSmelt=smelt1
+            fueled=True
         elif fuel/maxFuel <1:
             currentSmelt=smelt0
-        smeltStuff=[lambda:screen.blit(invOverlay,(0,0)),lambda:screen.blit(invOverlay2,(0,32)),lambda:screen.blit(currentSmelt,(0,0)),lambda:blitItems()]
-       
-        
-        
-            
+            fueled=True            
+        smeltStuff=[lambda:screen.blit(invOverlay,(0,0)),lambda:screen.blit(invOverlay2,(0,32)),lambda:screen.blit(currentSmelt,(0,0)),lambda:blitItems()]          
     ver.render(screen,True)
     pygame.display.update()
     clock.tick(60)

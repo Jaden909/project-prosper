@@ -1,3 +1,12 @@
+if 'smeltRecipes' not in globals():
+    smeltRecipes=[recipe for recipe in recipeObjs if recipe.type=='smelting0']
+    print(smeltRecipes)
+def smelt():
+    global smeltDone,smelting
+    time.sleep(5)
+    print('done')
+    smeltDone=True
+    smelting=False
 smeltOpen=True
 smeltDict=PyEngine.load('data\\smeltDebug.json')
 smeltList=smeltDict['Positions']

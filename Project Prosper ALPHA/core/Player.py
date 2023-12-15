@@ -12,7 +12,7 @@ class Player:
                 futureRect.move_ip(2,0)
                 for obstacle in obstacles:
                     if obstacle.colisRect.colliderect(futureRect):
-                        if obstacle.type=='woodWall' or obstacle.type=='caveWall' or obstacle.type=='caveWall2' or obstacle.type=='caveWall3':
+                        if obstacle.blockMovement:
                             #print(obstacle.colisRect.top,obstacle.colisRect.left)
                             #print(futureRect.top,futureRect.left)
                             blockMovement=True
@@ -27,7 +27,7 @@ class Player:
                 futureRect.move_ip(-2,0)
                 for obstacle in obstacles:
                     if obstacle.colisRect.colliderect(futureRect):
-                        if obstacle.type=='woodWall' or obstacle.type=='caveWall' or obstacle.type=='caveWall2' or obstacle.type=='caveWall3':
+                        if obstacle.blockMovement:
                             #print(obstacle.colisRect.top,obstacle.colisRect.left)
                             #print(futureRect.top,futureRect.left)
                             blockMovement=True
@@ -44,7 +44,7 @@ class Player:
                 futureRect.move_ip(0,-2)
                 for obstacle in obstacles:
                     if obstacle.colisRect.colliderect(futureRect):
-                        if obstacle.type=='woodWall' or obstacle.type=='caveWall' or obstacle.type=='caveWall2' or obstacle.type=='caveWall3':
+                        if obstacle.blockMovement:
                             #print(obstacle.colisRect.top,obstacle.colisRect.left)
                             #print(futureRect.top,futureRect.left)
                             blockMovement=True
@@ -58,7 +58,7 @@ class Player:
                 futureRect.move_ip(0,2)
                 for obstacle in obstacles:
                     if obstacle.colisRect.colliderect(futureRect):
-                        if obstacle.type=='woodWall' or obstacle.type=='caveWall' or obstacle.type=='caveWall2' or obstacle.type=='caveWall3':
+                        if obstacle.blockMovement:
                             #print(obstacle.colisRect.top,obstacle.colisRect.left)
                             #print(futureRect.top,futureRect.left)
                             blockMovement=True

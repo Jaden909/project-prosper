@@ -1,6 +1,6 @@
 [
     "These tips are stored in the 'tips.json' file. You can add your own too!",
     "Did you know that this tip is being autowrapped using PyEngine? PyEngine is the name of my Game Engine. While Pygame is definitely doing the heavy lifting of this project, PyEngine does things pygame doesn't, like UI support. Speaking of, the buttons you see above are made from PyEngine's GameButton class. I wonder if this tip will even fit on the screen?",
-    "These tips would show on the loading screen, but the game loads too fast for that(at least right now). It takes about 0.5 seconds on average.",
+    "These tips now are on the loading screen! It now takes about 13 seconds to generate a world on average. I have to admit the new world screen seems a little lonely now...",
     "Feeling Lazy? You can press f5 in game to reload the tile, generating new things to destroy. No more travelling through 5 oceans tiles just to find a grass tile."
 ]

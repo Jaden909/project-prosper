@@ -21,10 +21,14 @@ class Tile:
             elif sys.platform=='linux':
                 self.color=pygame.image.load('biomes/desert.png')
         elif self.biome=='o':
-            if sys.platform=='win32':
+            if sys.platform=='win32' and not xmas:
                 self.color=pygame.image.load('biomes\\ocean.png')
-            elif sys.platform=='linux':
-                self.color=pygame.image.load('biomes/ocean.png')  
+            elif sys.platform=='linux' and not xmas:
+                self.color=pygame.image.load('biomes/ocean.png')
+            elif sys.platform=='win32' and xmas:
+                self.color=pygame.image.load('biomes\\snow.png')
+            elif sys.platform=='linux' and xmas:
+                self.color=pygame.image.load('biomes/snow.png') 
         self.id=id
         if mapMode:
             self.tileRect=pygame.Rect(self.x,self.y,32,32)
@@ -102,8 +106,12 @@ class Tile:
         elif self.biome=='o':
             x=0
             y=0
+            if not xmas:
+                possibilities=['none']
+            else:
+                possibilities=['none','none','none','none','none','none',12,13,14,15,13,13]
             for i in range(256):
-                type=random.choice(['none'])
+                type=random.choice(possibilities)
                 if type=='tree':
                     dropsItem=1
                 elif type=='stone':
@@ -117,7 +125,8 @@ class Tile:
                     if y==32:
                         break
                     continue 
-                x+=1 
+                x+=1
+                 
         elif self.biome=='d':
             x=0
             y=0
