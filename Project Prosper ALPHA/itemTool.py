@@ -14,7 +14,8 @@ def create(type):
         idInd.configure(True,text=f'This item\'s id will be: {len(items)}')
         print(items)
     elif type=='tool':
-        #items.append({'Name':itemName.get(),'Id':len(items),'Sprite':itemSprite.get(),'Type':itemType})
+            
+        items.append({'Name':itemName.get(),'Id':len(items),'MaxStackSize':1,'Sprite':itemSprite.get(),'Type':itemType,'Tags':[f'durability{durability.get()}',f'harvestLevel{harvestLevel.get()}',f'lscript{lscript.get() if lscript.get()!="" else None}',f'rscript{rscript.get() if rscript.get()!="" else None}']})
         idInd.configure(True,text=f'This item\'s id will be: {len(items)}')
         print(items)
     elif type=='recipe':
@@ -30,12 +31,15 @@ def create(type):
 def saveItem():
     with open('data\\items.json','w') as f:
         json.dump(items,f)
+    print('Saved sucessfully')
 def saveBlock():
     with open('data\\blocks.json','w') as f:
         json.dump(blocks,f)
+    print('Saved sucessfully')
 def saveRecipe():
     with open('data\\recipes.json','w') as f:
         json.dump(recipes,f)
+    print('Saved sucessfully')    
 def itemList():
     itemListWin=CTk()
     itemListWin.title('Item List')
@@ -51,7 +55,7 @@ def itemList():
     itemListWin.mainloop()
 mainWin=CTk()
 mainWin.title('Item Creation Tool')
-mainWin.geometry('400x450')
+mainWin.geometry('400x600')
 items:list=json.load(open('data\\items.json'))
 blocks=json.load(open('data\\blocks.json'))
 recipes=json.load(open('data\\recipes.json'))
@@ -71,6 +75,10 @@ blockSprite=StringVar()
 output=StringVar()
 shapeless=BooleanVar()
 count=StringVar()
+durability=StringVar()
+harvestLevel=StringVar()
+lscript=StringVar()
+rscript=StringVar()
 recipe=[StringVar()for i in range(9)]
 #print(recipe)
 typeLabel=CTkLabel(mainWin,text='Item Type').pack()
@@ -92,24 +100,26 @@ CTkEntry(tab.tab('Recipe'),textvariable=recipeName).pack()
 #Max Stack Size Label
 CTkLabel(tab.tab('Item'),text='Max Stack Size').pack()
 CTkLabel(tab.tab('Block'),text='Max Stack Size').pack()
+
 #Max Stack Size Entry(2)
 CTkEntry(tab.tab('Item'),textvariable=maxStackSize).pack()
 CTkEntry(tab.tab('Block'),textvariable=maxStackSize).pack()
+
 #Recipe Label
 CTkLabel(tab.tab('Recipe'),text='Recipe (enter the ids of the component items and the output)').pack()
 #Recipe Entries(2)
 recFrame=CTkFrame(tab.tab('Recipe'))
 CTkEntry(recFrame,textvariable=recipe[0],width=20).grid(row=1,column=1)
-CTkEntry(recFrame,textvariable=recipe[1],width=20).grid(row=1,column=2)
-CTkEntry(recFrame,textvariable=recipe[2],width=20).grid(row=1,column=3)
+CTkEntry(recFrame,textvariable=recipe[1],width=20).grid(row=1,column=4)
+CTkEntry(recFrame,textvariable=recipe[2],width=20).grid(row=1,column=6)
 CTkEntry(recFrame,textvariable=recipe[3],width=20).grid(row=2,column=1)
-CTkEntry(recFrame,textvariable=recipe[4],width=20).grid(row=2,column=2)
-CTkEntry(recFrame,textvariable=recipe[5],width=20).grid(row=2,column=3)
+CTkEntry(recFrame,textvariable=recipe[4],width=20).grid(row=2,column=4)
+CTkEntry(recFrame,textvariable=recipe[5],width=20).grid(row=2,column=6)
 CTkEntry(recFrame,textvariable=recipe[6],width=20).grid(row=3,column=1)
-CTkEntry(recFrame,textvariable=recipe[7],width=20).grid(row=3,column=2)
-CTkEntry(recFrame,textvariable=recipe[8],width=20).grid(row=3,column=3)
+CTkEntry(recFrame,textvariable=recipe[7],width=20).grid(row=3,column=4)
+CTkEntry(recFrame,textvariable=recipe[8],width=20).grid(row=3,column=6)
 
-CTkEntry(recFrame,textvariable=output,width=20).grid(row=2,column=5)
+CTkEntry(recFrame,textvariable=output,width=20).grid(row=2,column=8)
 recFrame.pack()
 #Sprite Label
 CTkLabel(tab.tab('Item'),text='Item Sprite Location').pack()
@@ -131,6 +141,18 @@ CTkLabel(tab.tab('Recipe'),text='How many output items are produced from this re
 CTkEntry(tab.tab('Recipe'),textvariable=count).pack()
 #Block Sprite Entry (4)
 CTkEntry(tab.tab('Block'),textvariable=blockSprite).pack()
+#Tool Durability
+CTkLabel(tab.tab('Tool'),text='How many durability points does this tool have?').pack()
+CTkEntry(tab.tab('Tool'),textvariable=durability).pack()
+#Tool Harvest Level
+CTkLabel(tab.tab('Tool'),text='What is this tool\'s harvest level? (0=hand,1=basic tool)').pack()
+CTkEntry(tab.tab('Tool'),textvariable=harvestLevel).pack()
+#Tool l script
+CTkLabel(tab.tab('Tool'),text='What script should be called on left click?').pack()
+CTkEntry(tab.tab('Tool'),textvariable=lscript).pack()
+#Tool r script
+CTkLabel(tab.tab('Tool'),text='What script should be called on right click?').pack()
+CTkEntry(tab.tab('Tool'),textvariable=rscript).pack()
 #Create Button
 CTkButton(tab.tab('Item'),text='Create',command=lambda:create('item')).pack()
 CTkButton(tab.tab('Block'),text='Create',command=lambda:create('block')).pack()
@@ -141,10 +163,13 @@ idInd=CTkLabel(tab.tab('Item'),text=f'This item\'s id will be: {len(items)}')
 idInd.pack()
 recIdInd=CTkLabel(tab.tab('Recipe'),text=f'This recipe\'s id will be: {len(recipes)}')
 recIdInd.pack()
+idInd=CTkLabel(tab.tab('Tool'),text=f'This tool\'s id will be: {len(items)}')
+idInd.pack()
 #Save Button
 CTkButton(tab.tab('Item'),text='Save to JSON',command=saveItem).pack()
 CTkButton(tab.tab('Block'),text='Save to JSON',command=saveBlock).pack()
 CTkButton(tab.tab('Recipe'),text='Save to JSON',command=saveRecipe).pack()
+CTkButton(tab.tab('Tool'),text='Save to JSON',command=saveItem).pack()
 tab.pack()
 CTkButton(mainWin,text='View all items',command=itemList).pack()
 mainWin.mainloop()

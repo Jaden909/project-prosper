@@ -7,4 +7,4 @@
 {"Id": 6, "Name": "shoddyHandle", "Recipe": [7, 7, null, null, null, null, null, null, null], "Output": 9, "Shapeless": true, "Count": 1,"type":"crafting"}, 
 {"Id": 7, "Name": "cauldron", "Recipe": [3, null, 3, 3, null, 3, 3, 3, 3], "Output": 11, "Shapeless": false, "Count": 1,"type":"crafting"}, 
 {"Id": 8, "Name": "stove", "Recipe": [null, 11, null, 3, 3, 3, 3, 3, 3], "Output": 12, "Shapeless": false, "Count": 1,"type":"crafting"},
-{"Id": 9, "Name": "stove", "Recipe": [1], "Output": 12, "Shapeless": false, "Count": 1,"type":"smelting0"}]
+{"Id": 9, "Name": "stove", "Recipe": [10], "Output": 21, "Shapeless": false, "Count": 1,"type":"smelting0"}]

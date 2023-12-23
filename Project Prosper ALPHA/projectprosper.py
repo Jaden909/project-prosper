@@ -240,7 +240,7 @@ items=PyEngine.load('data\\items.json')
 blocks=PyEngine.load('data\\blocks.json')
 obstacleData=PyEngine.load('data\\obstacles.json')
 #0-17 Normal slots, 18-23 hotbar slots, 24+ crafting slots
-inventory=[{'Slot':0,'Item':12,'Amount':1},{'Slot':1,'Item':None,'Amount':0},{'Slot':2,'Item':None,'Amount':0},{'Slot':3,'Item':None,'Amount':0},{'Slot':4,'Item':None,'Amount':0},{'Slot':5,'Item':None,'Amount':0},{'Slot':6,'Item':None,'Amount':0},{'Slot':7,'Item':None,'Amount':0},{'Slot':8,'Item':None,'Amount':0},{'Slot':9,'Item':None,'Amount':0},{'Slot':10,'Item':None,'Amount':0},{'Slot':11,'Item':None,'Amount':0},{'Slot':12,'Item':None,'Amount':0},{'Slot':13,'Item':None,'Amount':0},{'Slot':14,'Item':None,'Amount':0},{'Slot':15,'Item':None,'Amount':0},{'Slot':16,'Item':None,'Amount':0},{'Slot':17,'Item':None,'Amount':0},{'Slot':18,'Item':None,'Amount':0},{'Slot':19,'Item':None,'Amount':0},{'Slot':20,'Item':None,'Amount':0},{'Slot':21,'Item':None,'Amount':0},{'Slot':22,'Item':None,'Amount':0},{'Slot':23,'Item':None,'Amount':0},{'Slot':24,'Item':None,'Amount':0},{'Slot':25,'Item':None,'Amount':0},{'Slot':26,'Item':None,'Amount':0},{'Slot':27,'Item':None,'Amount':0},{'Slot':28,'Item':None,'Amount':0},{'Slot':29,'Item':None,'Amount':0},{'Slot':30,'Item':None,'Amount':0},{'Slot':31,'Item':None,'Amount':0},{'Slot':32,'Item':None,'Amount':0},{'Slot':33,'Item':None,'Amount':0}]
+inventory=[{'Slot':0,'Item':12,'Amount':1},{'Slot':1,'Item':20,'Amount':1},{'Slot':2,'Item':None,'Amount':0},{'Slot':3,'Item':None,'Amount':0},{'Slot':4,'Item':None,'Amount':0},{'Slot':5,'Item':None,'Amount':0},{'Slot':6,'Item':None,'Amount':0},{'Slot':7,'Item':None,'Amount':0},{'Slot':8,'Item':None,'Amount':0},{'Slot':9,'Item':None,'Amount':0},{'Slot':10,'Item':None,'Amount':0},{'Slot':11,'Item':None,'Amount':0},{'Slot':12,'Item':None,'Amount':0},{'Slot':13,'Item':None,'Amount':0},{'Slot':14,'Item':None,'Amount':0},{'Slot':15,'Item':None,'Amount':0},{'Slot':16,'Item':None,'Amount':0},{'Slot':17,'Item':None,'Amount':0},{'Slot':18,'Item':None,'Amount':0},{'Slot':19,'Item':None,'Amount':0},{'Slot':20,'Item':None,'Amount':0},{'Slot':21,'Item':None,'Amount':0},{'Slot':22,'Item':None,'Amount':0},{'Slot':23,'Item':None,'Amount':0},{'Slot':24,'Item':None,'Amount':0},{'Slot':25,'Item':None,'Amount':0},{'Slot':26,'Item':None,'Amount':0},{'Slot':27,'Item':None,'Amount':0},{'Slot':28,'Item':None,'Amount':0},{'Slot':29,'Item':None,'Amount':0},{'Slot':30,'Item':None,'Amount':0},{'Slot':31,'Item':None,'Amount':0},{'Slot':32,'Item':None,'Amount':0},{'Slot':33,'Item':None,'Amount':0}]
 def customRound(x,base):
     return base * round(x/base)
 clock=pygame.time.Clock()
@@ -305,6 +305,7 @@ def generate():
     choice='o'
     x=0
     y=0
+
     if not levelMap:
         for i in range(256):
             if distribution=='equal' and mapMode:
@@ -407,8 +408,13 @@ def generate():
 
 exec(compile(open('core\\Player.py').read(),'core\\Player.py','exec'),globals())
 exec(compile(open('core\\Item.py').read(),'core\\Item.py','exec'),globals())
+exec(compile(open('core\\Tool.py').read(),'core\\Tool.py','exec'),globals())
 for item in items:
+    if item['Type']=='Tool':
+        itemObjs.append(Tool(item['Id']))
+        continue
     itemObjs.append(Item(item['Id']))
+
 exec(compile(open('core\\Recipe.py').read(),'core\\Recipe.py','exec'),globals())
 for recipe in recipes:
     recipeObjs.append(Recipe(recipe['Id']))
@@ -420,6 +426,30 @@ def getBlock(id:int)-> Block:
     return blockObjs[id]              
 def getItem(id:int)-> Item:
     return itemObjs[id]
+#Inv Untils
+def removeStack(slot:int):
+    item=inventory[slot]['Item']
+    amount=inventory[slot]['Amount']
+    inventory[slot]['Item']=None
+    inventory[slot]['Amount']=0
+    return (getItem(item),amount)
+def removeOne(slot:int):
+    print(slot)
+    item=inventory[slot]['Item']
+    inventory[slot]['Amount']-=1
+    if inventory[slot]['Amount']==0:
+        inventory[slot]['Item']=None
+    return (getItem(item),1)
+def addOne(slot,item):
+    if inventory[slot]['Item']==None:
+        inventory[slot]['Item']=item
+    if inventory[slot]['Item']==item:
+        inventory[slot]['Amount']+=1
+def addStack(slot,item,amount):
+    if inventory[slot]['Item']==None:
+        inventory[slot]['Item']=item
+    if inventory[slot]['Item']==item:
+        inventory[slot]['Amount']+=amount
 #for block in blocks:
 #    blockObjs.append(Block(block['Id']))
 def loadLevel(level):
@@ -561,6 +591,7 @@ while True:
         currentStruct.loadTile()
         
     currentItem=inventory[selectorPos+17]
+    currentIndex=selectorPos+17
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
             exit()
@@ -608,8 +639,10 @@ while True:
                 elif invOpen:
                     invOpen=False
         currentItem=inventory[selectorPos+17]
+        currentIndex=selectorPos+17
         if event.type==pygame.MOUSEBUTTONDOWN and not invOpen and not smeltOpen:
             currentItem=inventory[selectorPos+17]
+            currentIndex=selectorPos+17
             mouseRect=pygame.Rect((pygame.mouse.get_pos()[0],pygame.mouse.get_pos()[1]),(8,8))
             if currentItem['Item'] is not None and event.dict['button']==1:
                 if getItem(currentItem['Item']).type=='Block':
@@ -632,17 +665,23 @@ while True:
                                         #for ob in currentTile.obstacles:
                                         #
                                         #    print(ob.sprite)
-                                        currentItem['Amount']-=1
-                                        if currentItem['Amount']==0:
-                                            currentItem['Item']=None
+                                        removeOne(currentIndex)
                                         break
                             break
+                if currentItem['Item']is not None:
+                    if getItem(currentItem['Item']).type=='Tool':
+                        getItem(currentItem['Item']).lclick()
+                        
+                        
             if event.dict['button']==3:
                 for obstacle in obstacles:
                     obData=obstacle.checkCollisionDamage(mouseRect,False,False,False)
                     if obData!=False:
                         if obData[0]:
-                            obstacle.interact()                   
+                            obstacle.interact()
+                if currentItem['Item']is not None:
+                    if getItem(currentItem['Item']).type=='Tool':
+                        getItem(currentItem['Item']).rclick()                   
             if pygame.mouse.get_pos().__getitem__(0)>player.x and event.dict['button']==1 and currentItem['Item']==8: 
                 for frame in range(len(slash)):
                     screen.fill('white')
@@ -726,23 +765,21 @@ while True:
                     if slotHover==33 and inventory[slotHover]['Item']is not None and not holdingItem and valid:
                         for nothing in inventory[24:33]:
                             if nothing['Item']is not None:
-                                nothing['Amount']-=1
-                                if nothing['Amount']==0:
-                                    nothing['Item']=None
+                                removeOne(inventory.index(nothing))
                         holdingItem=True
                         heldItem=getItem(inventory[slotHover]['Item'])
                         heldItemAmount=inventory[slotHover]['Amount']
-                        inventory[slotHover]['Item']=None
-                        inventory[slotHover]['Amount']=0
+                        removeStack(slotHover)
                     elif slotHover==33 and holdingItem:
                         pass
                     #If slot with a item clicked empty handed
                     elif slotHover>-1 and inventory[slotHover]['Item']is not None and not holdingItem:
                         holdingItem=True
-                        heldItem=getItem(inventory[slotHover]['Item'])
-                        heldItemAmount=inventory[slotHover]['Amount']
-                        inventory[slotHover]['Item']=None
-                        inventory[slotHover]['Amount']=0
+                        heldItem,heldItemAmount=removeStack(slotHover)
+                        #heldItem=getItem(inventory[slotHover]['Item'])
+                        #heldItemAmount=inventory[slotHover]['Amount']
+                        #inventory[slotHover]['Item']=None
+                        #inventory[slotHover]['Amount']=0
                     #Add item count if possible
                     elif slotHover>-1 and inventory[slotHover]['Item']==heldItem.itemId and holdingItem and inventory[slotHover]['Amount']+heldItemAmount<=heldItem.maxStackSize:
                         holdingItem=False
@@ -752,24 +789,28 @@ while True:
                         #holdingItem=False
                         tempItem=heldItem
                         tempItemAmount=heldItemAmount
-                        heldItem=getItem(inventory[slotHover]['Item'])
-                        heldItemAmount=inventory[slotHover]['Amount']
-                        inventory[slotHover]['Item']=tempItem.itemId
-                        inventory[slotHover]['Amount']=tempItemAmount
+                        heldItem,heldItemAmount=removeStack(slotHover)
+                        #heldItem=getItem(inventory[slotHover]['Item'])
+                        #heldItemAmount=inventory[slotHover]['Amount']
+                        addStack(tempItem.itemId,tempItemAmount)
+                        #inventory[slotHover]['Item']=tempItem.itemId
+                        #inventory[slotHover]['Amount']=tempItemAmount
                         #Drop item if click outside inventory area
                     #Place item in empty slot
                     elif slotHover>-1 and inventory[slotHover]['Item']is None and holdingItem and inventory[slotHover]['Amount']<=heldItem.maxStackSize:
                         holdingItem=False
-                        inventory[slotHover]['Item']=heldItem.itemId
-                        inventory[slotHover]['Amount']=heldItemAmount
+                        addStack(slotHover,heldItem.itemId,heldItemAmount)
+                        #inventory[slotHover]['Item']=heldItem.itemId
+                        #inventory[slotHover]['Amount']=heldItemAmount
                 if event.dict['button']==3:
                     if slotHover>-1 and inventory[slotHover]['Item']is not None and not holdingItem:
                         holdingItem=True
-                        heldItem=getItem(inventory[slotHover]['Item'])
-                        heldItemAmount=1
-                        inventory[slotHover]['Amount']-=1
-                        if inventory[slotHover]['Amount']<=0:
-                            inventory[slotHover]['Item']=None
+                        heldItem,heldItemAmount=removeOne(slotHover)
+                        #heldItem=getItem(inventory[slotHover]['Item'])
+                        #heldItemAmount=1
+                        #inventory[slotHover]['Amount']-=1
+                        #if inventory[slotHover]['Amount']<=0:
+                        #    inventory[slotHover]['Item']=None
                     elif slotHover>-1 and inventory[slotHover]['Item']==heldItem.itemId and holdingItem and inventory[slotHover]['Amount']+heldItemAmount<=heldItem.maxStackSize:
                         holdingItem=False
                         inventory[slotHover]['Amount']+=heldItemAmount
@@ -777,8 +818,9 @@ while True:
                         heldItemAmount-=1
                         if heldItemAmount==0:
                             holdingItem=False
-                        inventory[slotHover]['Item']=heldItem.itemId
-                        inventory[slotHover]['Amount']+=1
+                        addOne(slotHover,heldItem.itemId)
+                        #inventory[slotHover]['Item']=heldItem.itemId
+                        #inventory[slotHover]['Amount']+=1
             elif smeltOpen:
                 slotHover=pygame.Rect(pygame.mouse.get_pos(),(16,16)).collidelist(invRects)
                 #1 = LMB
@@ -866,6 +908,7 @@ while True:
                                 holdingItem=False
                             inventory[slotHover]['Item']=heldItem.itemId
                             inventory[slotHover]['Amount']+=1
+    #print(inventory)
     mouseRect=pygame.Rect((pygame.mouse.get_pos()[0]-16,pygame.mouse.get_pos()[1]-16),(8,8))
     if currentItem['Item'] is not None:
         if getItem(currentItem['Item']).type=='Block':
