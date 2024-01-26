@@ -2,7 +2,7 @@
 {"Type":"tree","Id":1,"DropsItem":1,"IsEntrance":false,"Script":null,"Sprite":"objects\\tree\\tree.png","Animation":"objects\\tree","HarvestLevel":0,"ParentId":null,"BlockMovement":false},
 {"Type":"stone","Id":2,"DropsItem":3,"IsEntrance":false,"Script":null,"Sprite":"objects\\stone\\stone.png","Animation":"objects\\stone","HarvestLevel":0,"ParentId":null,"BlockMovement":true},
 {"Type":"bush","Id":3,"DropsItem":5,"IsEntrance":false,"Script":"bush.py","Sprite":"objects\\bush\\bushBerry.png","Animation":"objects\\bush","HarvestLevel":0,"ParentId":null,"BlockMovement":false},
-{"Type":"cactus","Id":4,"DropsItem":null,"IsEntrance":false,"Script":null,"Sprite":"objects\\cactus\\cactus.png","Animation":null,"HarvestLevel":0,"ParentId":null,"BlockMovement":false},
+{"Type":"cactus","Id":4,"DropsItem":22,"IsEntrance":false,"Script":null,"Sprite":"objects\\cactus\\cactus.png","Animation":null,"HarvestLevel":0,"ParentId":null,"BlockMovement":false},
 {"Type":"mine","Id":5,"DropsItem":null,"IsEntrance":true,"Script":"mine.py","Sprite":"objects\\mine.png","Animation":null,"HarvestLevel":-1,"ParentId":null,"BlockMovement":false},
 {"Type":"caveWall","Id":6,"DropsItem":null,"IsEntrance":false,"Script":null,"Sprite":"objects\\caveWall.png","Animation":null,"HarvestLevel":5,"ParentId":null,"BlockMovement":true},
 {"Type":"caveWall2","Id":7,"DropsItem":null,"IsEntrance":false,"Script":null,"Sprite":"objects\\caveWall2.png","Animation":null,"HarvestLevel":5,"ParentId":null,"BlockMovement":true},
@@ -13,4 +13,7 @@
 {"Type":"candyCane","Id":12,"DropsItem":15,"IsEntrance":false,"Script":null,"Sprite":"objects\\blueberryCandyCane\\candyCane.png","Animation":"objects\\blueberryCandyCane","HarvestLevel":0,"ParentId":null,"BlockMovement":false},
 {"Type":"pineTree","Id":13,"DropsItem":16,"IsEntrance":false,"Script":"pinetree.py","Sprite":"objects\\pineTree.png","Animation":null,"HarvestLevel":0,"ParentId":null,"BlockMovement":false},
 {"Type":"cherryCandyCane","Id":14,"DropsItem":18,"IsEntrance":false,"Script":null,"Sprite":"objects\\cherryCandyCane\\cherryCandyCane.png","Animation":"objects\\cherryCandyCane","HarvestLevel":0,"ParentId":null,"BlockMovement":false},
-{"Type":"fruitpunchCandyCane","Id":15,"DropsItem":19,"IsEntrance":false,"Script":null,"Sprite":"objects\\fruitpunchCandyCane\\fruitpunchCandyCane.png","Animation":"objects\\fruitpunchCandyCane","HarvestLevel":0,"ParentId":null,"BlockMovement":false}]
+{"Type":"fruitpunchCandyCane","Id":15,"DropsItem":19,"IsEntrance":false,"Script":null,"Sprite":"objects\\fruitpunchCandyCane\\fruitpunchCandyCane.png","Animation":"objects\\fruitpunchCandyCane","HarvestLevel":0,"ParentId":null,"BlockMovement":false},
+{"Type":"dChest","Id":16,"DropsItem":null,"IsEntrance":false,"Script":"dChest.py","Sprite":"objects\\dChest.png","Animation":null,"HarvestLevel":0,"ParentId":null,"BlockMovement":false},
+{"Type":"dTemple","Id":17,"DropsItem":null,"IsEntrance":true,"Script":"dTemple.py","Sprite":"objects\\dTemple.png","Animation":null,"HarvestLevel":0,"ParentId":null,"BlockMovement":false},
+{"Type":"sandMound","Id":18,"DropsItem":23,"IsEntrance":false,"Script":null,"Sprite":"objects\\sandMound\\sandMound.png","Animation":"objects\\sandMound","HarvestLevel":0,"ParentId":null,"BlockMovement":false}]

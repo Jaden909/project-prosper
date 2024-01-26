@@ -1,0 +1,11 @@
+Update 2 Patch Notes:
+
+- Added news panel
+- Added chat/command system
+- Added day/night cycle
+- Added a lot more desert content
+
+
+
+
+

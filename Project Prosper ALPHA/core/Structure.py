@@ -9,10 +9,10 @@ class Structure:
             self.safeZone=[]
         #Append new tiles with the cave biome and bind them to the entrances
         if self.type=='cave':
-            if sys.platform=='win32':
-                self.color=pygame.image.load('biomes\\cave.png')
-            elif sys.platform=='linux':
-                self.color=pygame.image.load('biomes/cave.png')
+
+            self.color=pygame.image.load(Path('biomes\\cave.png'))
+        elif self.type=='dTemple':
+            self.color=pygame.image.load(Path('biomes\\dTemple.png'))
         #elif self.biome=='f':
         #    self.color=pygame.image.load('biomes\\forest.png')
         #elif self.biome=='d':
@@ -30,30 +30,50 @@ class Structure:
         if self.type=='cave':
             x=0
             y=0
-            for i in range(256):
+            for i in range(64):
                 type=random.choice(['none','none','none',6,2,6,7,2,8,'none','none','none',9])
                 if i in self.safeZone:
                     type='none'
                 if i==self.escape:
                     type='escape'
                 self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i))
-                if x==15:
+                if x==7:
                     y+=1
                     x=0
-                    if y==32:
+                    if y==8:
+                        break
+                    continue 
+                x+=1
+        elif self.type=='dTemple':
+            x=0
+            y=0
+            for i in range(64):
+                type='none'
+                if i==self.escape:
+                    type='escape'
+                if i==4:
+                    type=16
+                self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i))
+                #self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i))
+                if x==7:
+                    y+=1
+                    x=0
+                    if y==8:
                         break
                     continue 
                 x+=1 
-        #print(len(self.obstacles))
+            #for obstacle in self.obstacles:
+            #    if obstacle.type!='none':
+            #        print(obstacle.type)
+            #print((self.obstacles))
     def loadTile(self):
-        global obRects
         screen.blit(self.color,(0,0))
         for obstaclee in self.obstacles:
             if obstaclee.type != 'none':
                 screen.blit(obstaclee.sprite,obstaclee.rect)
-            #if obstaclee.type=='tree':
-            #    screen.blit(obstacle,obstaclee.rect)
-            #elif obstaclee.type=='cactus':
-            #    screen.blit(cactus,obstaclee.rect)       
+                print('fghjk')
+        for obstacle in self.obstacles:
+                if obstacle.type!='none':
+                    print(obstacle.type)      
     def getObstacles(self):
         return self.obstacles

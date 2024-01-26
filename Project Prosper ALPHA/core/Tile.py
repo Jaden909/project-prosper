@@ -59,47 +59,39 @@ class Tile:
             x=0
             y=0
             possibilities=['none','none','none',1,'none','none','none',3,'none','none']
-            for i in range(256):
+            for i in range(64):
                 type=random.choice(possibilities)
                 if type==1:
                     self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64-20,y*64),(64,64)),i))
                 else:
                     self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i))
-                if x==15:
+                if x==7:
                     y+=1
                     x=0
-                    if y==32:
+                    if y==8:
                         break
                     continue 
                 x+=1
-            z=random.choice(range(256)) 
+            z=random.choice(range(64)) 
             w=self.obstacles.pop(z)
             self.obstacles.insert(z,Obstacle(5,w.rect,i))
             self.obstacles.insert(z,Obstacle(5,w.rect,i))
-            for ob in self.obstacles:
-                print(ob.type)
+            #for ob in self.obstacles:
+            #    print(ob.type)
             #print(self.obstacles)
         elif self.biome=='f':
             x=0
             y=0
-            for i in range(256):
+            for i in range(64):
                 type=random.choice(['none',1,3])
-                if type=='tree':
-                    dropsItem=1
-                elif type=='stone':
-                    dropsItem=3
-                elif type=='bush':
-                    dropsItem=5
-                else:
-                    dropsItem=0
                 if type==1:
                     self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64-20,y*64),(64,64)),i))
                 else:
                     self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i))
-                if x==15:
+                if x==7:
                     y+=1
                     x=0
-                    if y==32:
+                    if y==8:
                         break
                     continue 
                 x+=1 
@@ -110,7 +102,7 @@ class Tile:
                 possibilities=['none']
             else:
                 possibilities=['none','none','none','none','none','none',12,13,14,15,13,13]
-            for i in range(256):
+            for i in range(64):
                 type=random.choice(possibilities)
                 if type=='tree':
                     dropsItem=1
@@ -119,10 +111,10 @@ class Tile:
                 else:
                     dropsItem=0
                 self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i))
-                if x==15:
+                if x==7:
                     y+=1
                     x=0
-                    if y==32:
+                    if y==8:
                         break
                     continue 
                 x+=1
@@ -130,8 +122,8 @@ class Tile:
         elif self.biome=='d':
             x=0
             y=0
-            for i in range(256):
-                type=random.choice(['none','none',4])
+            for i in range(64):
+                type=random.choice(['none','none',4,18])
                 if type=='tree':
                     dropsItem=1
                 elif type=='stone':
@@ -139,20 +131,24 @@ class Tile:
                 else:
                     dropsItem=0
                 self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64,y*64),(64,64)),i))
-                if x==15:
+                if x==7:
                     y+=1
                     x=0
-                    if y==32:
+                    if y==8:
                         break
                     continue 
                 x+=1
+            z=random.choice(range(64)) 
+            w=self.obstacles.pop(z)
+            self.obstacles.insert(z,Obstacle(17,w.rect,i))
+            self.obstacles.insert(z,Obstacle(17,w.rect,i))
         tilesLoaded+=1 
         #print(f'Tile {self.id}: finished obstacle creation')
     def loadTile(self):
         global obRects
         screen.blit(self.color,(0,0))
         for obstaclee in self.obstacles:
-            if obstaclee.type != 'none':
+            if obstaclee.type != 'none' and not obstaclee.killMe:
                 screen.blit(obstaclee.sprite,obstaclee.rect)     
     def getObstacles(self):
         return self.obstacles

@@ -7,6 +7,7 @@ def smelt():
     print('done')
     smeltDone=True
     smelting=False
+smelting=False
 smeltOpen=True
 smeltDict=PyEngine.load('data\\smeltDebug.json')
 smeltList=smeltDict['Positions']

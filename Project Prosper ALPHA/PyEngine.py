@@ -194,20 +194,23 @@ class TextBox:
         
 
 
-def animation(moveList:list,frameDelay,screen,x,y,startTime,frame):
+def animation(moveList:list,frameDelay:int,screen:pygame.Surface,x,y,startTime:int,frame:int):
     """Pygame animation. returns current frame, startTime and done. Put this in a loop and supply the returned frame and startTime to work properly."""
-    #frame=0
+    framee=frame
     currentTime = pygame.time.get_ticks()
-    start=startTime
     done=False
     if currentTime - startTime >= frameDelay:
-        frame+=1
+        framee+=1
         startTime = currentTime
-    if frame==len(moveList):
-        frame=0
+    if framee==len(moveList):
+        framee=0
         done=True
-    screen.blit(moveList[frame],(x,y))
-    return frame,startTime,done
+        return framee,startTime,done
+    try:
+        screen.blit(moveList[frame],(x,y))
+    except:
+        pass
+    return framee,startTime,done
 
 def wasdInput(WFunction=None,AFunction=None,SFunction=None,DFunction=None):
     """Simple WASD/arrow keys input listener. Also supports arrow keys. Args are functions to run when respective key is pressed"""
@@ -311,11 +314,17 @@ def loadMods(modDir:str,loadingScreen:pygame.Surface=None,screen:pygame.Surface=
 def renderUI():
     for element in elements:
         element.render()
-def autoWrap(text:str,width:int,font:pygame.font.Font,textColor):
+def autoWrap(text:str,width:int,font:pygame.font.Font,textColor, stopAtWhiteSpace=False):
     "returns a list of surfaces of text autowrapped to a given width"
     line=''
     lines=[]
     words=text.split(' ')
+    if stopAtWhiteSpace:
+        words=text.split('\n')
+        for line in words:
+            #print(line)
+            lines.append(font.render(line,True,textColor))
+        return lines
     for i in range(len(words)):
         if font.size(line+words[i]+' ')[0]<=width:
             line+=words[i]+' '
@@ -332,4 +341,4 @@ def autoWrap(text:str,width:int,font:pygame.font.Font,textColor):
 if __name__=='__main__':
     print('This script doesn\'t work on its own. Import it into a project to use the functions and classes defined here')
 else:
-    print('Using PyEngine v0.4 APLHA') 
+    print('Using PyEngine v0.4.1 APLHA') 

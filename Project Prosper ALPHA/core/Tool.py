@@ -6,10 +6,7 @@ class Tool(Item):
         self.name=self.data['Name']
         self.maxStackSize=1
         self.spriteLocation=self.data['Sprite']
-        if sys.platform=='win32':
-            self.sprite=pygame.image.load('items\\'+self.spriteLocation)
-        elif sys.platform=='linux':
-            self.sprite=pygame.image.load('items/'+self.spriteLocation)
+        self.sprite=pygame.image.load(Path('items\\'+self.spriteLocation))
         
         self.type=self.data['Type']
         try:
@@ -27,19 +24,17 @@ class Tool(Item):
                     if tag[7:]=='None':
                         self.lscript=None
                         continue
-                    if sys.platform=='win32':
-                        self.lscript=compile(open(f'scripts\\{tag[7:]}').read(),f'scripts\\{tag[7:]}','exec')
-                    elif sys.platform=='linux':
-                        self.lscript=compile(open(f'scripts/{tag[7:]}').read(),f'scripts\\{tag[7:]}','exec')
+
+                    self.lscript=compile(open(Path(f'scripts\\{tag[7:]}')).read(),f'scripts\\{tag[7:]}','exec')
+
                 #Called on right click
                 elif tag[:7]=='rscript':
                     if tag[7:]=='None':
                         self.rscript=None
                         continue
-                    if sys.platform=='win32':
-                        self.rscript=compile(open(f'scripts\\{tag[7:]}').read(),f'scripts\\{tag[7:]}','exec')
-                    elif sys.platform=='linux':
-                        self.rscript=compile(open(f'scripts/{tag[7:]}').read(),f'scripts\\{tag[7:]}','exec')
+
+                    self.rscript=compile(open(Path(f'scripts\\{tag[7:]}')).read(),f'scripts\\{tag[7:]}','exec')
+
         except Exception as e:
             self.tags=[]
             self.harvestLevel=0
@@ -78,10 +73,8 @@ class Tool(Item):
             exec(self.rscript)
     def reloadSprite(self):
         if self.durability!=self.maxDurability:
-            if sys.platform=='win32':
-                self.sprite=pygame.image.load('items\\'+self.spriteLocation)
-            elif sys.platform=='linux':
-                self.sprite=pygame.image.load('items/'+self.spriteLocation)
+
+            self.sprite=pygame.image.load(Path('items\\'+self.spriteLocation))
             progressBar=pygame.surface.Surface((round(self.durability*32/self.maxDurability),4))
             progressBar.fill('green')
             self.sprite.blit(progressBar,(0,28))
