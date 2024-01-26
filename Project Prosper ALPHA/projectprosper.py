@@ -683,11 +683,11 @@ while True:
     elif not inStruct and currentTile is not None:
         screen.fill('white')
         currentTile.loadTile()
-    for enemy in enemies:
-        if enemy not in activeEnemies:
-            enemy.spawn()
-    for enemy in activeEnemies:
-        enemy.update()     
+    #for enemy in enemies:
+        #if enemy not in activeEnemies:
+            #enemy.spawn()
+    #for enemy in activeEnemies:
+        #enemy.update()     
     currentItem=inventory[selectorPos+17]
     currentIndex=selectorPos+17
     for event in pygame.event.get():
