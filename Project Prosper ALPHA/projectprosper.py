@@ -1,13 +1,13 @@
 import pygame,PyEngine,random,time as realTime,ctypes,os,sys,threading
-from pathlib import Path
+from pathlib import PurePath
 if sys.platform=='win32':
     ctypes.windll.shcore.SetProcessDpiAwareness(0)
 screen=pygame.display.set_mode((512,512))
 pygame.display.set_caption('Project Prosper','idk')
-horn0=pygame.mixer.Sound(Path('sfx\\horn0.wav'))
-horn1=pygame.mixer.Sound(Path('sfx\\horn1.wav'))
-horn2=pygame.mixer.Sound(Path('sfx\\horn2.wav'))
-horn3=pygame.mixer.Sound(Path('sfx\\horn3.wav'))
+horn0=pygame.mixer.Sound(PurePath('sfx','horn0.wav'))
+horn1=pygame.mixer.Sound(PurePath('sfx','horn1.wav'))
+horn2=pygame.mixer.Sound(PurePath('sfx','horn2.wav'))
+horn3=pygame.mixer.Sound(PurePath('sfx','horn3.wav'))
 horns=[horn0,horn1,horn2,horn3]
 #Seasonal Events
 currentTime=realTime.localtime()
@@ -47,7 +47,13 @@ maxFuel=0
 frames=0
 startTime=0
 newsOpen=False
-newsOverlay=pygame.image.load(Path('misc\\nightOverlay.png'))
+if sys.platform=='win32' or sys.platform=='linux' and not hasattr(sys,'getandroidapilevel'):
+    controls={'inv':'e','up':'w','down':'s','left':'a','right':'d'}
+elif hasattr(sys,'getandroidapilevel'):
+    controls={'inv':'e','up':'w','down':'s','left':'a','right':'d'}
+print(pygame.key.key_code('a'))
+
+newsOverlay=pygame.image.load(PurePath('misc','nightOverlay.png'))
 newsOverlay.set_alpha(200)
 ver=PyEngine.TextBox('Project Prosper ALPHA BUILD (Update 2 PREVIEW)',0,487,25,200,'coure.fon',15,False,False,'white','black','white',3,(5,5))
 def newGameToggle():
@@ -89,24 +95,24 @@ def notNews():
     newsOpen=False
 if not fastStart:
     if not xmas:
-        mainMenuImg=pygame.image.load('misc\\mainMenu.png')
-        projectImg=pygame.image.load('misc\\project.png')
+        mainMenuImg=pygame.image.load(PurePath('misc','mainMenu.png'))
+        projectImg=pygame.image.load(PurePath('misc','project.png'))
     else:
-        mainMenuImg=pygame.image.load('misc\\mainMenuXmas.png')
-        projectImg=pygame.image.load('misc\\projectXmas.png')
-    prosperImg=pygame.image.load('misc\\prosper.png')
-    mainMenuOverlay=pygame.image.load('misc\\mainMenuOverlay.png')
+        mainMenuImg=pygame.image.load('misc','mainMenuXmas.png')
+        projectImg=pygame.image.load('misc','projectXmas.png')
+    prosperImg=pygame.image.load(PurePath('misc','prosper.png'))
+    mainMenuOverlay=pygame.image.load(PurePath('misc','mainMenuOverlay.png'))
     mainMenuOverlay.set_alpha(150)
-    newGameButt=PyEngine.GameButton(200,325,newGameToggle,'default',True,True,'default',64,'misc\\button.png',120,40,None,'misc\\buttonAlt.png')
-    optionsButt=PyEngine.GameButton(200,380,options,'default',True,True,'default',64,'misc\\button.png',120,40,None,'misc\\buttonAlt.png')
-    exitButt=PyEngine.GameButton(200,435,exit,'default',True,True,'default',64,'misc\\button.png',120,40,None,'misc\\buttonAlt.png')
-    seedEntry=PyEngine.GameButton(200,60,pygame.key.start_text_input,'default',True,False,'ibeam',64,'misc\\button.png',120,40,None,None)
-    equalButt=PyEngine.GameButton(60,150,lambda:setDistribution('equal'),'default',True,False,'default',64,'misc\\button.png',120,40,None,'misc\\buttonAlt.png')
-    oceansButt=PyEngine.GameButton(200,150,lambda:setDistribution('oceans'),'default',True,False,'default',64,'misc\\button.png',120,40,None,'misc\\buttonAlt.png')
-    balancedButt=PyEngine.GameButton(340,150,lambda:setDistribution('balanced'),'default',True,False,'default',64,'misc\\button.png',120,40,None,'misc\\buttonAlt.png')
-    createWorldButt=PyEngine.GameButton(200,315,startGame,'default',True,False,'default',64,'misc\\button.png',120,40,None,'misc\\buttonAlt.png')
-    newsButt=PyEngine.GameButton(480,480,news,'default',True,True,'default',32,'misc\\news.png',120,40,None,'misc\\newsAlt.png')
-    exitNewsButt=PyEngine.GameButton(480,0,notNews,'default',True,True,'default',32,'misc\\exit.png',120,40,None,'misc\\exitAlt.png')
+    newGameButt=PyEngine.GameButton(200,325,newGameToggle,'default',True,True,'default',64,PurePath('misc','button.png'),120,40,None,PurePath('misc','buttonAlt.png'))
+    optionsButt=PyEngine.GameButton(200,380,options,'default',True,True,'default',64,PurePath('misc','button.png'),120,40,None,PurePath('misc','buttonAlt.png'))
+    exitButt=PyEngine.GameButton(200,435,exit,'default',True,True,'default',64,PurePath('misc','button.png'),120,40,None,PurePath('misc','buttonAlt.png'))
+    seedEntry=PyEngine.GameButton(200,60,pygame.key.start_text_input,'default',True,False,'ibeam',64,PurePath('misc','button.png'),120,40,None,None)
+    equalButt=PyEngine.GameButton(60,150,lambda:setDistribution('equal'),'default',True,False,'default',64,PurePath('misc','button.png'),120,40,None,PurePath('misc','buttonAlt.png'))
+    oceansButt=PyEngine.GameButton(200,150,lambda:setDistribution('oceans'),'default',True,False,'default',64,PurePath('misc','button.png'),120,40,None,PurePath('misc','buttonAlt.png'))
+    balancedButt=PyEngine.GameButton(340,150,lambda:setDistribution('balanced'),'default',True,False,'default',64,PurePath('misc','button.png'),120,40,None,PurePath('misc','buttonAlt.png'))
+    createWorldButt=PyEngine.GameButton(200,315,startGame,'default',True,False,'default',64,PurePath('misc','button.png'),120,40,None,PurePath('misc','buttonAlt.png'))
+    newsButt=PyEngine.GameButton(480,480,news,'default',True,True,'default',32,PurePath('misc','news.png'),120,40,None,PurePath('misc','newsAlt.png'))
+    exitNewsButt=PyEngine.GameButton(480,0,notNews,'default',True,True,'default',32,PurePath('misc','exit.png'),120,40,None,PurePath('misc','exitAlt.png'))
     line=[] 
     seedText=''
     distribution='balanced'
@@ -179,52 +185,52 @@ if not fastStart:
             
             
             i=0
-            for line in PyEngine.autoWrap(open('misc\\news.txt').read(),480,font,'white',True):
+            for line in PyEngine.autoWrap(open('misc','news.txt').read(),480,font,'white',True):
                 screen.blit(line,(10,i*25+25))
                 i+=1    
         ver.render(screen)
         pygame.display.update()
 
-grass=pygame.image.load(Path('biomes\\grass.png')).convert()
-ocean=pygame.image.load(Path('biomes\\ocean.png')).convert()
-desert=pygame.image.load(Path('biomes\\desert.png')).convert()
-forest=pygame.image.load(Path('biomes\\forest.png')).convert()
+grass=pygame.image.load(PurePath('biomes','grass.png')).convert()
+ocean=pygame.image.load(PurePath('biomes','ocean.png')).convert()
+desert=pygame.image.load(PurePath('biomes','desert.png')).convert()
+forest=pygame.image.load(PurePath('biomes','forest.png')).convert()
 
-slash0=pygame.image.load(Path('Slash\\slash0.png'))
-slash1=pygame.image.load(Path('Slash\\slash1.png'))
-slash2=pygame.image.load(Path('Slash\\slash2.png'))
-slash3=pygame.image.load(Path('Slash\\slash3.png'))
-slash4=pygame.image.load(Path('Slash\\slash4.png'))
-slash5=pygame.image.load(Path('Slash\\slash5.png'))
-slash6=pygame.image.load(Path('Slash\\slash6.png'))
-slash7=pygame.image.load(Path('Slash\\slash7.png'))
+slash0=pygame.image.load(PurePath('Slash','slash0.png'))
+slash1=pygame.image.load(PurePath('Slash','slash1.png'))
+slash2=pygame.image.load(PurePath('Slash','slash2.png'))
+slash3=pygame.image.load(PurePath('Slash','slash3.png'))
+slash4=pygame.image.load(PurePath('Slash','slash4.png'))
+slash5=pygame.image.load(PurePath('Slash','slash5.png'))
+slash6=pygame.image.load(PurePath('Slash','slash6.png'))
+slash7=pygame.image.load(PurePath('Slash','slash7.png'))
 
 slashFrame=0
 slashStartTime=0
 slashDone=True
 
-slashL0=pygame.image.load(Path('SlashLeft\\slash0.png'))
-slashL1=pygame.image.load(Path('SlashLeft\\slash1.png'))
-slashL2=pygame.image.load(Path('SlashLeft\\slash2.png'))
-slashL3=pygame.image.load(Path('SlashLeft\\slash3.png'))
-slashL4=pygame.image.load(Path('SlashLeft\\slash4.png'))
-slashL5=pygame.image.load(Path('SlashLeft\\slash5.png'))
-slashL6=pygame.image.load(Path('SlashLeft\\slash6.png'))
-slashL7=pygame.image.load(Path('SlashLeft\\slash7.png'))
+slashL0=pygame.image.load(PurePath('SlashLeft','slash0.png'))
+slashL1=pygame.image.load(PurePath('SlashLeft','slash1.png'))
+slashL2=pygame.image.load(PurePath('SlashLeft','slash2.png'))
+slashL3=pygame.image.load(PurePath('SlashLeft','slash3.png'))
+slashL4=pygame.image.load(PurePath('SlashLeft','slash4.png'))
+slashL5=pygame.image.load(PurePath('SlashLeft','slash5.png'))
+slashL6=pygame.image.load(PurePath('SlashLeft','slash6.png'))
+slashL7=pygame.image.load(PurePath('SlashLeft','slash7.png'))
 
 slashLFrame=0
 slashLStartTime=0
 slashLDone=True
 
-invOverlay=pygame.image.load(Path('objects\\invOverlay.png'))
-invOverlay2=pygame.image.load(Path('objects\\invOverlay2.png'))
-invOverlay3=pygame.image.load(Path('objects\\craftOverlay.png'))
-hbOverlay=pygame.image.load(Path('objects\\hotBarOverlay.png'))
-invScreen=pygame.image.load(Path('objects\\invScreen3.png'))
-chatLine=pygame.image.load(Path('misc\\chatLineOverlay.png'))
-hotBar=pygame.image.load(Path('objects\\hotBar.png'))
-hotBarSelector=pygame.image.load(Path('objects\\hotBarSelector.png'))
-night=pygame.image.load(Path('misc\\nightOverlay.png'))
+invOverlay=pygame.image.load(PurePath('objects','invOverlay.png'))
+invOverlay2=pygame.image.load(PurePath('objects','invOverlay2.png'))
+invOverlay3=pygame.image.load(PurePath('objects','craftOverlay.png'))
+hbOverlay=pygame.image.load(PurePath('objects','hotBarOverlay.png'))
+invScreen=pygame.image.load(PurePath('objects','invScreen3.png'))
+chatLine=pygame.image.load(PurePath('misc','chatLineOverlay.png'))
+hotBar=pygame.image.load(PurePath('objects','hotBar.png'))
+hotBarSelector=pygame.image.load(PurePath('objects','hotBarSelector.png'))
+night=pygame.image.load(PurePath('misc','nightOverlay.png'))
 
 invOverlay.set_alpha(150)
 invOverlay2.set_alpha(200)
@@ -233,22 +239,22 @@ hbOverlay.set_alpha(200)
 chatLine.set_alpha(200)
 night.set_alpha(0)
 
-test=pygame.image.load(Path('objects\\test.png'))
-hbvis=pygame.image.load(Path('misc\\hitboxVis.png'))
-hbvisBig=pygame.image.load(Path('misc\\hitboxVisBig.png'))
-hbvisNone=pygame.image.load(Path('misc\\hitboxVisNone.png'))
-hbvisBigNone=pygame.image.load(Path('misc\\hitboxVisNoneBig.png'))
-hbvisBigBlock=pygame.image.load(Path('misc\\hitboxVisBigBlock.png'))
-hbvisBigSolid=pygame.image.load(Path('misc\\hitboxVisBigSolid.png'))
+test=pygame.image.load(PurePath('objects','test.png'))
+hbvis=pygame.image.load(PurePath('misc','hitboxVis.png'))
+hbvisBig=pygame.image.load(PurePath('misc','hitboxVisBig.png'))
+hbvisNone=pygame.image.load(PurePath('misc','hitboxVisNone.png'))
+hbvisBigNone=pygame.image.load(PurePath('misc','hitboxVisNoneBig.png'))
+hbvisBigBlock=pygame.image.load(PurePath('misc','hitboxVisBigBlock.png'))
+hbvisBigSolid=pygame.image.load(PurePath('misc','hitboxVisBigSolid.png'))
 
 slash=[slash0,slash1,slash2,slash3,slash4,slash5,slash6,slash7]
 slashL=[slashL0,slashL1,slashL2,slashL3,slashL4,slashL5,slashL6,slashL7]
 
-#cactus=pygame.image.load('objects\\cactus.png')
-woodWall=pygame.image.load(Path('objects\\woodWall.png'))
-caveWall=pygame.image.load(random.choice([Path('objects\\caveWall.png'),Path('objects\\caveWall2.png'),Path('objects\\caveWall3.png')]))
-cave=pygame.image.load(Path('objects\\mine.png'))
-none64=pygame.image.load(Path('misc\\none64.png'))
+#cactus=pygame.image.load('objects','cactus.png')
+woodWall=pygame.image.load(PurePath('objects','woodWall.png'))
+caveWall=pygame.image.load(random.choice([PurePath('objects','caveWall.png'),PurePath('objects','caveWall2.png'),PurePath('objects','caveWall3.png')]))
+cave=pygame.image.load(PurePath('objects','mine.png'))
+none64=pygame.image.load(PurePath('misc','none64.png'))
 
 selectorPos=1
 debugInv=False
@@ -278,37 +284,37 @@ ii=0
 line1,line2,line3='','',''
 time=0
 darker,lighter=True,False
-playerImg=pygame.image.load(Path('biomes\\bigPlayer.png'))
-pygame.display.set_icon(pygame.image.load(Path('misc\\icon.png')))
-recipes=PyEngine.load(Path('data\\recipes.json'))
-items=PyEngine.load(Path('data\\items.json'))
-blocks=PyEngine.load(Path('data\\blocks.json'))
-obstacleData=PyEngine.load(Path('data\\obstacles.json'))
-commands=PyEngine.load(Path('data\\commands.json'))
+playerImg=pygame.image.load(PurePath('biomes','bigPlayer.png'))
+pygame.display.set_icon(pygame.image.load(PurePath('misc','icon.png')))
+recipes=PyEngine.load(PurePath('data','recipes.json'))
+items=PyEngine.load(PurePath('data','items.json'))
+blocks=PyEngine.load(PurePath('data','blocks.json'))
+obstacleData=PyEngine.load(PurePath('data','obstacles.json'))
+commands=PyEngine.load(PurePath('data','commands.json'))
 #0-17 Normal slots, 18-23 hotbar slots, 24+ crafting slots
 inventory=[{'Slot':0,'Item':12,'Amount':1},{'Slot':1,'Item':20,'Amount':1},{'Slot':2,'Item':8,'Amount':1},{'Slot':3,'Item':None,'Amount':0},{'Slot':4,'Item':None,'Amount':0},{'Slot':5,'Item':None,'Amount':0},{'Slot':6,'Item':None,'Amount':0},{'Slot':7,'Item':None,'Amount':0},{'Slot':8,'Item':None,'Amount':0},{'Slot':9,'Item':None,'Amount':0},{'Slot':10,'Item':None,'Amount':0},{'Slot':11,'Item':None,'Amount':0},{'Slot':12,'Item':None,'Amount':0},{'Slot':13,'Item':None,'Amount':0},{'Slot':14,'Item':None,'Amount':0},{'Slot':15,'Item':None,'Amount':0},{'Slot':16,'Item':None,'Amount':0},{'Slot':17,'Item':None,'Amount':0},{'Slot':18,'Item':None,'Amount':0},{'Slot':19,'Item':None,'Amount':0},{'Slot':20,'Item':None,'Amount':0},{'Slot':21,'Item':None,'Amount':0},{'Slot':22,'Item':None,'Amount':0},{'Slot':23,'Item':None,'Amount':0},{'Slot':24,'Item':None,'Amount':0},{'Slot':25,'Item':None,'Amount':0},{'Slot':26,'Item':None,'Amount':0},{'Slot':27,'Item':None,'Amount':0},{'Slot':28,'Item':None,'Amount':0},{'Slot':29,'Item':None,'Amount':0},{'Slot':30,'Item':None,'Amount':0},{'Slot':31,'Item':None,'Amount':0},{'Slot':32,'Item':None,'Amount':0},{'Slot':33,'Item':None,'Amount':0}]
 def customRound(x,base):
     return base * round(x/base)
 clock=pygame.time.Clock()
-exec(compile(open(Path('core\\Player.py')).read(),'Player.py','exec'),globals())
-exec(compile(open(Path('core\\Item.py')).read(),'Item.py','exec'),globals())
+exec(compile(open(PurePath('core','Player.py')).read(),'Player.py','exec'),globals())
+exec(compile(open(PurePath('core','Item.py')).read(),'Item.py','exec'),globals())
 for item in items:
     itemObjs.append(Item(item['Id']))
-exec(compile(open(Path('core\\Recipe.py')).read(),'Recipe.py','exec'),globals())
+exec(compile(open(PurePath('core','Recipe.py')).read(),'Recipe.py','exec'),globals())
 for recipe in recipes:
     recipeObjs.append(Recipe(recipe['Id']))
-exec(compile(open(Path('core\\Obstacle.py')).read(),'Obstacle.py','exec'),globals())
-exec(compile(open(Path('core\\Tile.py')).read(),'Tile.py','exec'),globals())
-#exec(compile(open('core\\Block.py').read(),'core\\Block.py','exec'),globals())
-exec(compile(open(Path('core\\Structure.py')).read(),'Structure.py','exec'),globals())
-exec(compile(open(Path('core\\Enemy.py' )).read(),'Enemy.py','exec'),globals())
+exec(compile(open(PurePath('core','Obstacle.py')).read(),'Obstacle.py','exec'),globals())
+exec(compile(open(PurePath('core','Tile.py')).read(),'Tile.py','exec'),globals())
+#exec(compile(open('core','Block.py').read(),'core','Block.py','exec'),globals())
+exec(compile(open(PurePath('core','Structure.py')).read(),'Structure.py','exec'),globals())
+exec(compile(open(PurePath('core','Enemy.py' )).read(),'Enemy.py','exec'),globals())
 
 def generate():
     global screen,seed,distribution,start,structures
-    tips=PyEngine.load(Path('data\\tips.json'))
+    tips=PyEngine.load(PurePath('data','tips.json'))
     tip=random.choice(tips)
     tipLines=PyEngine.autoWrap('Tip: '+tip,480,font,'white')
-    tipOverlay=pygame.image.load(Path('misc\\tipOverlay.png'))
+    tipOverlay=pygame.image.load(PurePath('misc','tipOverlay.png'))
     tipOverlay.set_alpha(150)
     print('Starting World Gen...')
     levelMap=[]
@@ -472,7 +478,7 @@ def generate():
             x+=1
     #print(sys.getsizeof(tiles[3].obstacles[0].sprite)) 
 
-basic=Enemy(Path('ai\\basic.py'),Path('misc\\icon.png'),'basic',None,50,5)             
+basic=Enemy(PurePath('ai','basic.py'),PurePath('misc','icon.png'),'basic',None,50,5)             
 def getItem(id:int)-> Item:
 
     return itemObjs[id]
@@ -602,7 +608,7 @@ def send(message,system=True):
             print(commandParts)
             for command in commands:
                 if command['Name']==commandParts[0][1:]:
-                    exec(compile(open(Path('commands',command['Script'])).read(),command['Script'],'exec'),globals())
+                    exec(compile(open(PurePath('commands',command['Script'])).read(),command['Script'],'exec'),globals())
                     validCommand=True
             if not validCommand:
                 print(f'Command: \'{cText[1:]}\' not found')
@@ -683,11 +689,11 @@ while True:
     elif not inStruct and currentTile is not None:
         screen.fill('white')
         currentTile.loadTile()
-    #for enemy in enemies:
-        #if enemy not in activeEnemies:
-            #enemy.spawn()
-    #for enemy in activeEnemies:
-        #enemy.update()     
+    for enemy in enemies:
+        if enemy not in activeEnemies:
+            enemy.spawn()
+    for enemy in activeEnemies:
+        enemy.update()     
     currentItem=inventory[selectorPos+17]
     currentIndex=selectorPos+17
     for event in pygame.event.get():
@@ -714,23 +720,23 @@ while True:
                     drawHitboxes=False
             if keys[pygame.K_F3]:
                 #Reload Classes
-                exec(compile(open(Path('core\\Player.py')).read(),'Player.py','exec'),globals())
+                exec(compile(open(PurePath('core','Player.py')).read(),'Player.py','exec'),globals())
                 x,y=player.x,player.y
                 player=Player(x,y)
                 player.id=currentTile.id
-                exec(compile(open(Path('core\\Item.py')).read(),'Item.py','exec'),globals())
+                exec(compile(open(PurePath('core','Item.py')).read(),'Item.py','exec'),globals())
                 itemObjs.clear()
                 for item in items:
                     itemObjs.append(Item(item['Id']))
-                exec(compile(open(Path('core\\Recipe.py')).read(),'Recipe.py','exec'),globals())
+                exec(compile(open(PurePath('core','Recipe.py')).read(),'Recipe.py','exec'),globals())
                 recipeObjs.clear()
                 for recipe in recipes:
                     recipeObjs.append(Recipe(recipe['Id']))
-                exec(compile(open(Path('core\\Obstacle.py')).read(),'Obstacle.py','exec'),globals())
+                exec(compile(open(PurePath('core','Obstacle.py')).read(),'Obstacle.py','exec'),globals())
                 currentTile.createObstacles()
-                exec(compile(open(Path('core\\Tile.py')).read(),'Tile.py','exec'),globals())
-                #exec(compile(open('core\\Block.py').read(),'core\\Block.py','exec'),globals())
-                exec(compile(open(Path('core\\Structure.py')).read(),'Structure.py','exec'),globals())
+                exec(compile(open(PurePath('core','Tile.py')).read(),'Tile.py','exec'),globals())
+                #exec(compile(open('core','Block.py').read(),'core','Block.py','exec'),globals())
+                exec(compile(open(PurePath('core','Structure.py')).read(),'Structure.py','exec'),globals())
                 #for block in blocks:
                 #    blockObjs.append(Block(block['Id']))
             if keys[pygame.K_SLASH] and not chatOpen:
@@ -756,7 +762,7 @@ while True:
                 
                 
                 
-            if keys[pygame.K_e] and not chatOpen:
+            if keys[pygame.key.key_code(controls['inv'])] and not chatOpen:
                 if smeltOpen:
                     smeltOpen=False
                 elif not invOpen:
@@ -1004,11 +1010,11 @@ while True:
                             hover.set_alpha(130)
                             screen.blit(hover,(customRound(mouseRect.left,64),customRound(mouseRect.top,64)))
                             break            
-    invDict=PyEngine.load(Path('data\\InvDebug.json' ))
+    invDict=PyEngine.load(PurePath('data','InvDebug.json' ))
     invList=invDict['positions']
-    craftDict=PyEngine.load(Path('data\\craftDebug.json'))
+    craftDict=PyEngine.load(PurePath('data','craftDebug.json'))
     craftList=craftDict['positions']
-    hbDict=PyEngine.load(Path('data\\hotBarDebug.json' ))
+    hbDict=PyEngine.load(PurePath('data','hotBarDebug.json' ))
     hbList=hbDict['positons']
     invRects=[]
     for slot in invList:
@@ -1070,7 +1076,7 @@ while True:
             itemText.render(screen)
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
         else:
-            pygame.mouse.set_cursor(pygame.cursors.Cursor((8,8),pygame.image.load('misc\\hand.png')))
+            pygame.mouse.set_cursor(pygame.cursors.Cursor((8,8),pygame.image.load(PurePath('misc','hand.png'))))
         if drawHitboxes:
             screen.blit(hbvis,player.playerRect)
             for obstacle in obstacles:
@@ -1145,7 +1151,7 @@ while True:
     if pygame.time.get_ticks()-startTime>=1000:
         fps.update(f'FPS: {frames}')
         frames=0
-        advanceTime(100)
+        advanceTime(1)
         startTime=pygame.time.get_ticks()
     screen.blit(night,(0,0))
     ver.render(screen)

@@ -19,12 +19,12 @@ class Obstacle:
             #print(sys.getsizeof(self.sprite))  
             self.harvestLevel=self.data['HarvestLevel']
             if self.data['Animation'] is not None:
-                for root, dirs, files in os.walk(Path(self.data["Animation"])):
+                for root, dirs, files in os.walk(PurePath(self.data["Animation"])):
                     for name in dirs:
-                        self.sprites=os.listdir(Path(self.data['Animation']+'\\'+name))
+                        self.sprites=os.listdir(PurePath(self.data['Animation']+'\\'+name))
                 self.animation=[]
                 for sprite in self.sprites:
-                    self.animation.append(pygame.image.load(Path(self.data['Animation']+'\\'+name+'\\'+sprite)))
+                    self.animation.append(pygame.image.load(PurePath(self.data['Animation']+'\\'+name+'\\'+sprite)))
             else:
                 self.animation=None
             self.frame=0

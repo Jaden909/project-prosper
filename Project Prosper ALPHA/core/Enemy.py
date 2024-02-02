@@ -3,8 +3,8 @@ class Enemy:
         self.x=random.choice(range(512))
         self.y=random.choice(range(512))
         self.rect=pygame.Rect((self.x,self.y),(64,64))
-        self.ai=compile(open(Path(ai)).read(),Path(ai),'exec')
-        self.sprite=pygame.image.load(Path(sprite))
+        self.ai=compile(open(PurePath(ai)).read(),PurePath(ai),'exec')
+        self.sprite=pygame.image.load(PurePath(sprite))
         self.name=name
         self.biomes=biomes
         self.spawnChance=spawnChance

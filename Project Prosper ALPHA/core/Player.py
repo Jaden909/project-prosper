@@ -7,7 +7,7 @@ class Player:
     def listenInputs(self):
             keys=pygame.key.get_pressed()
             blockMovement=False
-            if keys[pygame.K_d]:
+            if keys[pygame.key.key_code(controls['right'])]:
                 futureRect=self.playerRect.copy()
                 futureRect.move_ip(2,0)
                 for obstacle in obstacles:
@@ -21,7 +21,7 @@ class Player:
                     self.x+=2
                         
                 screen.blit(playerImg,(self.x,self.y))
-            if keys[pygame.K_a]:
+            if keys[pygame.key.key_code(controls['left'])]:
                 blockMovement=False
                 futureRect=self.playerRect.copy()
                 futureRect.move_ip(-2,0)
@@ -38,7 +38,7 @@ class Player:
                     self.x-=2
                 screen.blit(playerImg,(self.x,self.y))
             screen.blit(playerImg,(self.x,self.y))
-            if keys[pygame.K_w]:
+            if keys[pygame.key.key_code(controls['up'])]:
                 blockMovement=False
                 futureRect=self.playerRect.copy()
                 futureRect.move_ip(0,-2)
@@ -52,7 +52,7 @@ class Player:
                 if not blockMovement:
                     self.y-=2
                 screen.blit(playerImg,(self.x,self.y))
-            if keys[pygame.K_s]:
+            if keys[pygame.key.key_code(controls['down'])]:
                 blockMovement=False
                 futureRect=self.playerRect.copy()
                 futureRect.move_ip(0,2)

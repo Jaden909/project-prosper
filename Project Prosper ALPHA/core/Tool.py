@@ -6,7 +6,7 @@ class Tool(Item):
         self.name=self.data['Name']
         self.maxStackSize=1
         self.spriteLocation=self.data['Sprite']
-        self.sprite=pygame.image.load(Path('items\\'+self.spriteLocation))
+        self.sprite=pygame.image.load(PurePath('items\\'+self.spriteLocation))
         
         self.type=self.data['Type']
         try:
@@ -25,7 +25,7 @@ class Tool(Item):
                         self.lscript=None
                         continue
 
-                    self.lscript=compile(open(Path(f'scripts\\{tag[7:]}')).read(),f'scripts\\{tag[7:]}','exec')
+                    self.lscript=compile(open(PurePath(f'scripts\\{tag[7:]}')).read(),f'scripts\\{tag[7:]}','exec')
 
                 #Called on right click
                 elif tag[:7]=='rscript':
@@ -33,7 +33,7 @@ class Tool(Item):
                         self.rscript=None
                         continue
 
-                    self.rscript=compile(open(Path(f'scripts\\{tag[7:]}')).read(),f'scripts\\{tag[7:]}','exec')
+                    self.rscript=compile(open(PurePath(f'scripts\\{tag[7:]}')).read(),f'scripts\\{tag[7:]}','exec')
 
         except Exception as e:
             self.tags=[]
@@ -74,7 +74,7 @@ class Tool(Item):
     def reloadSprite(self):
         if self.durability!=self.maxDurability:
 
-            self.sprite=pygame.image.load(Path('items\\'+self.spriteLocation))
+            self.sprite=pygame.image.load(PurePath('items\\'+self.spriteLocation))
             progressBar=pygame.surface.Surface((round(self.durability*32/self.maxDurability),4))
             progressBar.fill('green')
             self.sprite.blit(progressBar,(0,28))

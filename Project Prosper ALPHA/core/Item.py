@@ -6,7 +6,7 @@ class Item:
         self.maxStackSize=self.data['MaxStackSize']
         self.spriteLocation=self.data['Sprite']
 
-        self.sprite=pygame.image.load(Path('items\\'+self.spriteLocation))
+        self.sprite=pygame.image.load(PurePath('items\\'+self.spriteLocation))
         self.type=self.data['Type']
         try:
             self.tags=self.data['Tags']
