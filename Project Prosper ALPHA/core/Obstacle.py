@@ -56,7 +56,7 @@ class Obstacle:
             self.startTime=0
             self.done=True
         if self.scriptFile is not None:
-            self.script=compile(open(f'scripts\\{self.scriptFile}').read(),self.scriptFile,'exec')
+            self.script=compile(open(PurePath('scripts',self.scriptFile)).read(),self.scriptFile,'exec')
          
         else:
             self.script=None

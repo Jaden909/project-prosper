@@ -1008,7 +1008,7 @@ while True:
                     currentBlock=block
                     for i in range(len(obstacles)):
                         if obstacles[i].checkCollisionDamage(mouseRect,False,False,False):
-                            hover=pygame.image.load(currentBlock['Sprite'])
+                            hover=pygame.image.load(PurePath(*currentBlock['Sprite']))
                             hover.set_alpha(130)
                             screen.blit(hover,(customRound(mouseRect.left,64),customRound(mouseRect.top,64)))
                             break            
