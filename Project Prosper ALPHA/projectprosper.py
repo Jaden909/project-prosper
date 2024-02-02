@@ -191,6 +191,8 @@ if not fastStart:
         ver.render(screen)
         pygame.display.update()
 
+
+
 grass=pygame.image.load(PurePath('biomes','grass.png')).convert()
 ocean=pygame.image.load(PurePath('biomes','ocean.png')).convert()
 desert=pygame.image.load(PurePath('biomes','desert.png')).convert()

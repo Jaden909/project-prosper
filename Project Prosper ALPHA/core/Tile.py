@@ -6,29 +6,18 @@ class Tile:
         self.obRects=[]
         #Append new tiles with the cave biome and bind them to the entrances
         if self.biome=='g':
-            if sys.platform=='win32':
-                self.color=pygame.image.load('biomes\\grass.png')
-            elif sys.platform=='linux':
-                self.color=pygame.image.load('biomes/grass.png')
+                self.color=pygame.image.load(PurePath('biomes','grass.png'))
+
         elif self.biome=='f':
-            if sys.platform=='win32':
-                self.color=pygame.image.load('biomes\\forest.png')
-            elif sys.platform=='linux':
-                self.color=pygame.image.load('biomes/forest.png')
+            self.color=pygame.image.load(PurePath('biomes','forest.png'))
         elif self.biome=='d':
-            if sys.platform=='win32':
-                self.color=pygame.image.load('biomes\\desert.png')
-            elif sys.platform=='linux':
-                self.color=pygame.image.load('biomes/desert.png')
+            self.color=pygame.image.load(PurePath('biomes','desert.png'))
         elif self.biome=='o':
-            if sys.platform=='win32' and not xmas:
-                self.color=pygame.image.load('biomes\\ocean.png')
-            elif sys.platform=='linux' and not xmas:
-                self.color=pygame.image.load('biomes/ocean.png')
-            elif sys.platform=='win32' and xmas:
-                self.color=pygame.image.load('biomes\\snow.png')
-            elif sys.platform=='linux' and xmas:
-                self.color=pygame.image.load('biomes/snow.png') 
+            if not xmas:
+                self.color=pygame.image.load(PurePath('biomes','ocean.png'))
+            else:
+                self.color=pygame.image.load(PurePath('biomes','snow.png'))
+
         self.id=id
         if mapMode:
             self.tileRect=pygame.Rect(self.x,self.y,32,32)

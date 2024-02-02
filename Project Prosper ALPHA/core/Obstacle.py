@@ -11,20 +11,17 @@ class Obstacle:
             self.isEntrance=self.data['IsEntrance']
             self.scriptFile=self.data['Script']
             self.blockMovement=self.data['BlockMovement']
-            if self.data['Sprite']in obCache.keys():
-                self.sprite=obCache[self.data['Sprite']] 
-            else:
-                self.sprite=pygame.image.load(self.data['Sprite'])
-                obCache[self.data['Sprite']]=self.sprite
+            self.sprite=pygame.image.load(PurePath(*self.data['Sprite']))
+
             #print(sys.getsizeof(self.sprite))  
             self.harvestLevel=self.data['HarvestLevel']
             if self.data['Animation'] is not None:
-                for root, dirs, files in os.walk(PurePath(self.data["Animation"])):
+                for root, dirs, files in os.walk(PurePath(*self.data["Animation"])):
                     for name in dirs:
-                        self.sprites=os.listdir(PurePath(self.data['Animation']+'\\'+name))
+                        self.sprites=os.listdir(PurePath(*self.data['Animation'],name))
                 self.animation=[]
                 for sprite in self.sprites:
-                    self.animation.append(pygame.image.load(PurePath(self.data['Animation']+'\\'+name+'\\'+sprite)))
+                    self.animation.append(pygame.image.load(PurePath(*self.data['Animation'],name,sprite)))
             else:
                 self.animation=None
             self.frame=0
@@ -50,7 +47,7 @@ class Obstacle:
             self.dropsItem=self.data['DropsItem']
             self.isEntrance=self.data['IsEntrance']
             self.scriptFile=self.data['Script']
-            self.sprite=pygame.image.load(self.data['Sprite'])
+            self.sprite=pygame.image.load(PurePath(*self.data['Sprite']))
             self.animation=None
             self.harvestLevel=self.data['HarvestLevel']
             self.blockMovement=False
