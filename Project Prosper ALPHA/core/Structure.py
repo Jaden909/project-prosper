@@ -10,9 +10,9 @@ class Structure:
         #Append new tiles with the cave biome and bind them to the entrances
         if self.type=='cave':
 
-            self.color=pygame.image.load(PurePath('biomes\\cave.png'))
+            self.color=pygame.image.load(PurePath('biomes','cave.png'))
         elif self.type=='dTemple':
-            self.color=pygame.image.load(PurePath('biomes\\dTemple.png'))
+            self.color=pygame.image.load(PurePath('biomes','dTemple.png'))
         #elif self.biome=='f':
         #    self.color=pygame.image.load('biomes\\forest.png')
         #elif self.biome=='d':
