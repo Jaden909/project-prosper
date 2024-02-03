@@ -28,7 +28,7 @@ class Message:
                 return False
 class GameButton:
     """Create a button that can trigger a function if clicked on or a message is recieved (if one is provided)"""
-    def __init__(self,x:int=0,y:int=0,function=None,notHoverSprite:pygame.Surface='default',hover:bool=True,active:bool=True,hoverSprite:pygame.Surface='default',imageRes:int=64,image:str='Defaults\\DEFAULTBUTTON.png',imageResX:int=0,imageResY:int=0,message:Message=None,hoverAlt=None):
+    def __init__(self,x:int=0,y:int=0,function=None,notHoverSprite:pygame.Surface='default',hover:bool=True,active:bool=True,hoverSprite:pygame.Surface='default',imageRes:int=64,image:str='Defaults\\DEFAULTBUTTON.png',imageResX:int=0,imageResY:int=0,message:Message=None,hoverAlt=None,hold=False):
         self.hovering=False
         #REQUIRED ARGS  
         self.x=x
@@ -64,6 +64,7 @@ class GameButton:
             self.hoverAlt=pygame.image.load(hoverAlt)
         else:
             self.hoverAlt=None
+        self.hold=hold
         buttons.append(self)    
     #Blits button to screen provided
     def show(self,screen:pygame.surface.Surface):
@@ -103,14 +104,18 @@ class GameButton:
             if left and self.function:
                 if self.square:    
                     mouseX,mouseY=pygame.mouse.get_pos()
-                    if mouseX>self.x and mouseX<self.x+self.imageRes and mouseY>self.y and mouseY<self.y+self.imageRes and _mouseDown==False:
+                    if mouseX>self.x and mouseX<self.x+self.imageRes and mouseY>self.y and mouseY<self.y+self.imageRes and not _mouseDown:
                         self.function()
                         _mouseDown=True
+                    elif mouseX>self.x and mouseX<self.x+self.imageRes and mouseY>self.y and mouseY<self.y+self.imageRes and self.hold and _mouseDown:
+                        self.function()
                 else:
                     mouseX,mouseY=pygame.mouse.get_pos()
                     if mouseX>self.x and mouseX<self.x+self.imageResX and mouseY>self.y and mouseY<self.y+self.imageResY and _mouseDown==False:
                         self.function()
                         _mouseDown=True
+                    elif mouseX>self.x and mouseX<self.x+self.imageRes and mouseY>self.y and mouseY<self.y+self.imageRes and self.hold and _mouseDown:
+                        self.function()
             else: _mouseDown=False
             if self.message and self.function:
                 if self.message.listen():

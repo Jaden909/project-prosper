@@ -5,9 +5,10 @@ class Player:
             self.currentBiome='unknown'
             self.playerRect=pygame.rect.Rect(self.x,self.y,30,32)
     def listenInputs(self):
-            keys=pygame.key.get_pressed()
+            global goRight, goLeft, goUp, goDown
             blockMovement=False
-            if keys[pygame.key.key_code(controls['right'])]:
+            if keys[pygame.key.key_code(controls['right'])] or goRight:
+                goRight=False
                 futureRect=self.playerRect.copy()
                 futureRect.move_ip(2,0)
                 for obstacle in obstacles:
@@ -21,7 +22,8 @@ class Player:
                     self.x+=2
                         
                 screen.blit(playerImg,(self.x,self.y))
-            if keys[pygame.key.key_code(controls['left'])]:
+            if keys[pygame.key.key_code(controls['left'])] or goLeft:
+                goLeft=False
                 blockMovement=False
                 futureRect=self.playerRect.copy()
                 futureRect.move_ip(-2,0)
@@ -38,7 +40,8 @@ class Player:
                     self.x-=2
                 screen.blit(playerImg,(self.x,self.y))
             screen.blit(playerImg,(self.x,self.y))
-            if keys[pygame.key.key_code(controls['up'])]:
+            if keys[pygame.key.key_code(controls['up'])] or goUp:
+                goUp=False
                 blockMovement=False
                 futureRect=self.playerRect.copy()
                 futureRect.move_ip(0,-2)
@@ -52,8 +55,9 @@ class Player:
                 if not blockMovement:
                     self.y-=2
                 screen.blit(playerImg,(self.x,self.y))
-            if keys[pygame.key.key_code(controls['down'])]:
+            if keys[pygame.key.key_code(controls['down'])] or goDown:
                 blockMovement=False
+                goDown=False
                 futureRect=self.playerRect.copy()
                 futureRect.move_ip(0,2)
                 for obstacle in obstacles:

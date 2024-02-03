@@ -49,8 +49,13 @@ startTime=0
 newsOpen=False
 if sys.platform=='win32' or sys.platform=='linux' and not hasattr(sys,'getandroidapilevel'):
     controls={'inv':'e','up':'w','down':'s','left':'a','right':'d'}
+    mobile=False
 elif hasattr(sys,'getandroidapilevel'):
     controls={'inv':'e','up':'w','down':'s','left':'a','right':'d'}
+    mobile=True
+#mobile=True
+
+
 print(pygame.key.key_code('a'))
 
 newsOverlay=pygame.image.load(PurePath('misc','nightOverlay.png'))
@@ -84,6 +89,7 @@ def startGame():
     del newGameToggle,newGame,options,setDistribution,mainMenuImg,mainMenuOverlay,newGameButt,optionsButt,exitButt,seedEntry,equalButt,oceansButt,balancedButt,createWorldButt
     screen.fill('black')
     screen.blit(font.render('Generating World...',True,'white'),(200,220))
+    PyEngine.disableAll()
     pygame.display.update()
     start=realTime.time()
 def news():
@@ -257,6 +263,27 @@ woodWall=pygame.image.load(PurePath('objects','woodWall.png'))
 caveWall=pygame.image.load(random.choice([PurePath('objects','caveWall.png'),PurePath('objects','caveWall2.png'),PurePath('objects','caveWall3.png')]))
 cave=pygame.image.load(PurePath('objects','mine.png'))
 none64=pygame.image.load(PurePath('misc','none64.png'))
+goLeft=False
+goRight=False
+goUp=False
+goDown=False
+def left():
+    global goLeft
+    goLeft=True
+def right():
+    global goRight
+    goRight=True
+def up():
+    global goUp
+    goUp=True
+def down():
+    global goDown
+    goDown=True
+if mobile:
+    leftButt=PyEngine.GameButton(20,430,left,imageRes=32,image=PurePath('misc','left.png'),hold=True)
+    rightButt=PyEngine.GameButton(90,430,right,imageRes=32,image=PurePath('misc','right.png'),hold=True)
+    upButt=PyEngine.GameButton(55,395,up,imageRes=32,image=PurePath('misc','up.png'),hold=True)
+    downButt=PyEngine.GameButton(55,430,down,imageRes=32,image=PurePath('misc','down.png'),hold=True)
 
 selectorPos=1
 debugInv=False
@@ -698,6 +725,10 @@ while True:
         enemy.update()     
     currentItem=inventory[selectorPos+17]
     currentIndex=selectorPos+17
+    keys=pygame.key.get_pressed()
+    PyEngine.showAll(screen)
+    PyEngine.listenAll(screen)
+    player.listenInputs()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
             exit()
@@ -1019,12 +1050,13 @@ while True:
     hbDict=PyEngine.load(PurePath('data','hotBarDebug.json' ))
     hbList=hbDict['positons']
     invRects=[]
+    
     for slot in invList:
         invRects.append(pygame.Rect(slot,(32,32)))
     for slot in craftList:
         invRects.append(pygame.Rect(slot,(32,32)))
     invPositions=[]
-    player.listenInputs()
+
     while None in droppedItems:
         droppedItems.remove(None)
     for item in droppedItems:
