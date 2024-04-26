@@ -3,7 +3,7 @@ if 'smeltRecipes' not in globals():
     print(smeltRecipes)
 def smelt():
     global smeltDone,smelting
-    time.sleep(5)
+    realTime.sleep(5)
     print('done')
     smeltDone=True
     smelting=False

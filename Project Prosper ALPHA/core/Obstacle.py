@@ -1,6 +1,5 @@
 class Obstacle:
     def __init__(self,id,rect,posid) -> None:
-        global obCache
         if id!='none' and id!='escape':
             self.id=id
             self.data=obstacleData[id]
@@ -11,8 +10,8 @@ class Obstacle:
             self.isEntrance=self.data['IsEntrance']
             self.scriptFile=self.data['Script']
             self.blockMovement=self.data['BlockMovement']
-            self.sprite=pygame.image.load(PurePath(*self.data['Sprite']))
-
+            self.sprite=PurePath(*self.data['Sprite'])
+            obCache[self.type]=pygame.image.load(self.sprite)
             #print(sys.getsizeof(self.sprite))  
             self.harvestLevel=self.data['HarvestLevel']
             if self.data['Animation'] is not None:
@@ -21,7 +20,7 @@ class Obstacle:
                         self.sprites=os.listdir(PurePath(*self.data['Animation'],name))
                 self.animation=[]
                 for sprite in self.sprites:
-                    self.animation.append(pygame.image.load(PurePath(*self.data['Animation'],name,sprite)))
+                    self.animation.append(PurePath(*self.data['Animation'],name,sprite))
             else:
                 self.animation=None
             self.frame=0
@@ -47,7 +46,7 @@ class Obstacle:
             self.dropsItem=self.data['DropsItem']
             self.isEntrance=self.data['IsEntrance']
             self.scriptFile=self.data['Script']
-            self.sprite=pygame.image.load(PurePath(*self.data['Sprite']))
+            self.sprite=PurePath(*self.data['Sprite'])
             self.animation=None
             self.harvestLevel=self.data['HarvestLevel']
             self.blockMovement=False
@@ -56,7 +55,7 @@ class Obstacle:
             self.startTime=0
             self.done=True
         if self.scriptFile is not None:
-            self.script=compile(open(PurePath('scripts',self.scriptFile)).read(),self.scriptFile,'exec')
+            self.script=open(PurePath('scripts',self.scriptFile)).read()
          
         else:
             self.script=None
@@ -84,12 +83,14 @@ class Obstacle:
                         #print(self.id)
                         tile.obstacles.pop(self.posid)
                         tile.obstacles.insert(self.posid,Obstacle('none',self.colisRect,self.posid)) 
+                        #self.killMe=True
             elif destorySelf:
                 for structure in structures:
                     if structure.id==player.id:
                         #print(self.id)
                         structure.obstacles.pop(self.posid)
                         structure.obstacles.insert(self.posid,Obstacle('none',self.colisRect,self.posid)) 
+                        #self.killMe=True
             if getLocation:
                 #print(self.dropsItem)
                 if eventActive:
@@ -104,4 +105,4 @@ class Obstacle:
         if self.isEntrance:
             entrancePos=(self.rect)
         if self.script is not None:
-            exec(self.script,globals())
+            exec(compile(self.script,self.scriptFile,'exec'),globals())

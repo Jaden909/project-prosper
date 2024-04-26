@@ -1,0 +1,1 @@
+player.hp-=int(commandParts[1])

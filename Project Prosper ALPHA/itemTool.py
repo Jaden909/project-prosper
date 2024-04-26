@@ -2,6 +2,7 @@ import json
 from customtkinter import *
 from tkinter import *
 itemType=None
+#ADD NEW TYPE PARAMETER TO RECIPES
 def create(type):
     global itemType,itemName,itemSprite,blockSprite,maxStackSize
     itemType=tab.get()

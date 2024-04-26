@@ -5,18 +5,18 @@ class Tile:
         self.biome=biome
         self.obRects=[]
         #Append new tiles with the cave biome and bind them to the entrances
-        if self.biome=='g':
-                self.color=pygame.image.load(PurePath('biomes','grass.png'))
-
-        elif self.biome=='f':
-            self.color=pygame.image.load(PurePath('biomes','forest.png'))
-        elif self.biome=='d':
-            self.color=pygame.image.load(PurePath('biomes','desert.png'))
-        elif self.biome=='o':
-            if not xmas:
-                self.color=pygame.image.load(PurePath('biomes','ocean.png'))
-            else:
-                self.color=pygame.image.load(PurePath('biomes','snow.png'))
+        #if self.biome=='g':
+        #        self.color=pygame.image.load(PurePath('biomes','grass.png'))
+#
+        #elif self.biome=='f':
+        #    self.color=pygame.image.load(PurePath('biomes','forest.png'))
+        #elif self.biome=='d':
+        #    self.color=pygame.image.load(PurePath('biomes','desert.png'))
+        #elif self.biome=='o':
+        #    if not xmas:
+        #        self.color=pygame.image.load(PurePath('biomes','ocean.png'))
+        #    else:
+        #        self.color=pygame.image.load(PurePath('biomes','snow.png'))
 
         self.id=id
         if mapMode:
@@ -37,8 +37,10 @@ class Tile:
             print('god help me')
             return True
             
-        else:
-            return False
+
+        return False
+
+
     def createObstacles(self):
         #print(f'Tile {self.id}: Starting obstacles creation')
         global seed,tilesLoaded
@@ -135,9 +137,12 @@ class Tile:
         #print(f'Tile {self.id}: finished obstacle creation')
     def loadTile(self):
         global obRects
-        screen.blit(self.color,(0,0))
+        screen.blit(bgCache[self.biome],(0,0))
         for obstaclee in self.obstacles:
-            if obstaclee.type != 'none' and not obstaclee.killMe:
-                screen.blit(obstaclee.sprite,obstaclee.rect)     
+            if obstaclee.type != 'none' and not obstaclee.killMe and obstaclee.type in obCache:
+                screen.blit(obCache[obstaclee.type],obstaclee.rect)
+            elif obstaclee.type != 'none' and not obstaclee.killMe:
+                obCache[obstaclee.type]=pygame.image.load(obstaclee.sprite)
+                screen.blit(obCache[obstaclee.type],obstaclee.rect)     
     def getObstacles(self):
         return self.obstacles

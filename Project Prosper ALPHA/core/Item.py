@@ -5,8 +5,11 @@ class Item:
         self.name=self.data['Name']
         self.maxStackSize=self.data['MaxStackSize']
         self.spriteLocation=self.data['Sprite']
-
-        self.sprite=pygame.image.load(PurePath('items',self.spriteLocation))
+        try:
+            self.sprite=pygame.image.load(PurePath('items',self.spriteLocation))
+        except:
+            self.sprite=pygame.image.load(PurePath('items','unknown.png'))
+            self.name=f'Object failed to load ({self.itemId})'
         self.type=self.data['Type']
         try:
             self.tags=self.data['Tags']
@@ -20,6 +23,10 @@ class Item:
                     self.tags.remove('solidFuel')
         except:
             self.tags=[]
+        try:
+            self.tooltip=self.data['Tooltip']
+        except:
+            self.tooltip=''
     def pickUp(self):
         global invFull
         inventory.reverse()

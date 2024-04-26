@@ -1,10 +1,26 @@
-Update 2 Patch Notes:
+Update 3 Patch Notes:
 
-- Added news panel
-- Added chat/command system
-- Added day/night cycle
-- Added a lot more desert content
+Main changes:
+- Added Enemies
+- Added Player health and hunger
+- Added first boss
+- Changed player model and added sprites for holding items
 
+Improvements:
+-Changed how sprites are stored resulting in a staggering 90% memory reduction
+-The above change also allows for worlds to be saved. (currently only after generation, press space on main menu to load it)
+-PyEngine improvements (mainly to `Projectile` class)
+
+Known Problems:
+-Infinite Cactus (it was fixed and then it unfixed itself)
+-Invisible Enemies? (needs more testing but i don't think they're visible anymore)
+-Crafting and smelting at the same time is goofy (will be fixed when unique inventories are added)
+Other things i can't remember
+
+Future things:
+-Unique inventories(chests and stuff)
+-Loot tables
+-Ranged weapons (and ammo)
 
 
 
