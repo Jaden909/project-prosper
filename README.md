@@ -9,23 +9,15 @@ A survival game about rapidly advancing technology
 ## Setting up a Mod (not fully working yet)
 1. Create a folder with the name of your mod
    
-2. Create a new .py file in the new folder (you can also name this after your mod but it doesn't matter)
+2. Create a new .py file in the new folder (you can also name this after your mod but it doesn't matter)   
    
-3. Copy this line of code into the python file: 
+3. If you have items that you want added to game, use this line of code:
    ```python
-   exec(compile(open('modHelper.py').read(),'modHelper.py','exec'),globals())
+   registerItems(PurePath('Example Mod','moditems.json'))
    ```
-   This will intialize the modHelper script in a way that will allow it to access the game's variables directly
+   replace 'moditems.json' with the path to the json file containing your items' data (relative to the Project Prosper ALPHA\mods folder)
    
-4. You should now be able to use modHelper's functions (though your IDE won't know and say the functions are undefined)
-   
-5. If you have items that you want added to game, use this line of code:
-   ```python
-   registerItems(json.load(open('moditems.json')),'moditems.json')
-   ```
-   replace 'moditems.json' with the path to the json file containing your items' data (relative to the Project Prosper ALPHA folder)
-   
-6. You have now added your own items to the game! `registerItems()` returns both the id of the items relative to the mod and the actual id that was assigned when it was added to the game. You can use these in your mod logic.  
+4. You have now added your own items to the game! `registerItems()` returns both the id of the items relative to the mod and the actual id that was assigned when it was added to the game. You can use these in your mod logic.  
 
   
 #### Classes that are/will be moddable:
