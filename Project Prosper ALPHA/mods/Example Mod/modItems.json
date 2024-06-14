@@ -1,0 +1,1 @@
+[{"Name": "Axe", "Id": 0, "MaxStackSize": 1, "Sprite": "ae.png", "Type": "Item", "Tags": {"durability":50, "harvestLevel":1, "lscript":"l.py", "rscript":"r.py", "damage":10}}]

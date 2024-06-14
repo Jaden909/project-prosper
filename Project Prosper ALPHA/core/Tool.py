@@ -8,37 +8,47 @@ class Tool(Item):
         self.spriteLocation=self.data['Sprite']
         self.sprite=pygame.image.load(PurePath('items\\'+self.spriteLocation))
         self.baseSprite=pygame.image.load(PurePath('items\\'+self.spriteLocation))
-        
         self.type=self.data['Type']
         try:
+
             self.tags=self.data['Tags']
-            for tag in self.tags:
-                if tag[:12]=='harvestLevel':
-                    self.harvestLevel=int(tag[12:])
-                elif tag[:10]=='durability':
-                    self.durability=int(tag[10:])
-                    self.maxDurability=self.durability
-                elif tag[:8]=='burnTime':
+            if 'harvestLevel' in self.tags:
+                self.harvestLevel=int(self.tags['harvestLevel'])
+            if 'durability' in self.tags:
+                self.durability=int(self.tags['durability'])
+                self.maxDurability=self.durability
+            if 'burnTime' in self.tags:
+                self.burnTime=int(self.tags['burnTime'])
+            #Called on left click
+            if 'lscript'in self.tags:
+                if self.tags['lscript']is None:
+                    self.lscript=None
+                else:
+                    self.lscript=compile(open(PurePath(f"scripts",f"{self.tags['lscript']}")).read(),f"scripts\\{self.tags['lscript']}",'exec')
+            #Called on right click
+            if 'rscript'in self.tags:
+                if self.tags['rscript']is None:
+                    self.rscript=None
+                else:
+                    self.rscript=compile(open(PurePath(f"scripts",f"{self.tags['rscript']}")).read(),f"scripts\\{self.tags['rscript']}",'exec')
+            if 'damage'in self.tags:
+                self.damage=int(self.tags['damage'])
+            if 'SwingSpeed'in self.tags:
+                self.speed=int(self.tags['SwingSpeed'])
+            if 'solidFuel' in self.tags:
+                if 'burnTime' in self.tags:
                     self.burnTime=int(tag[8:])
-                #Called on left click
-                elif tag[:7]=='lscript':
-                    if tag[7:]=='None':
-                        self.lscript=None
-                        continue
-
-                    self.lscript=compile(open(PurePath(f'scripts\\{tag[7:]}')).read(),f'scripts\\{tag[7:]}','exec')
-                #Called on right click
-                elif tag[:7]=='rscript':
-                    if tag[7:]=='None':
-                        self.rscript=None
-                        continue
-
-                    self.rscript=compile(open(PurePath(f'scripts\\{tag[7:]}')).read(),f'scripts\\{tag[7:]}','exec')
-                elif tag[:6]=='damage':
-                    self.damage=int(tag[6:])
-                elif tag[:10]=='SwingSpeed':
-                    self.speed=int(tag[10:])
-        
+                else:
+                    print(f'Warning: item {self.name} is missing the burnTime tag. Its fueling functions are disabled.')
+                    self.tags.remove('solidFuel')
+            if 'hideWhenHolding' in self.tags:
+                self.hideWhenHolding=True
+            else:
+                self.hideWhenHolding=False
+            if 'holdScript' in self.tags:
+                self.holdScript=compile(open(PurePath("scripts",f"{self.tags['holdScript']}")).read(),f"scripts\\{self.tags['holdScript']}",'exec')
+            else:
+                self.holdScript=None
         except Exception as e:
             self.tags=[]
             self.harvestLevel=0
@@ -46,36 +56,32 @@ class Tool(Item):
             self.lscript=None
             self.rscript=None
             self.damage=1
+            self.hideWhenHolding=False
+            self.holdScript=None
             print(f'Loading of tool {self.name} failed. Tool will be dysfunctional, but should still work as an item.')
             print(e)  
         try:
             self.tooltip=self.data['Tooltip']
         except:
-            self.tooltip=''
-        try:
-            self.tags=self.data['Tags']
-            if 'solidFuel' in self.tags:
-                for tag in self.tags:
-                    if tag[:8]=='burnTime':
-                        self.burnTime=int(tag[8:])
-                        break
-                else:
-                    print(f'Warning: item {self.name} is missing the burnTime tag. Its fueling functions are disabled.')
-                    self.tags.remove('solidFuel')
-        except:
-            self.tags=[]       
-        
+            self.tooltip=''    
     #Tool Stuff
     def lclick(self):
-        if self.lscript!=None:
-            global currentTool
-            currentTool=self
-            exec(self.lscript,globals())
+        try:
+
+            if self.lscript!=None:
+                global currentTool
+                currentTool=self
+                exec(self.lscript,globals())
+        except:
+            pass
     def rclick(self):
-        if self.rscript!=None:
-            global currentTool
-            currentTool=self
-            exec(self.rscript,globals())
+        try:
+            if self.rscript!=None:
+                global currentTool
+                currentTool=self
+                exec(self.rscript,globals())
+        except:
+            pass
     def reloadSprite(self):
         if self.durability!=self.maxDurability:
 

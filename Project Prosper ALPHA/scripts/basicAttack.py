@@ -1,10 +1,10 @@
 #print('l')
 slashSpeed=getItem(currentItem['Item']).speed
-if player.direction=='left' and slashLDone:
+if player1.direction=='left' and slashLDone:
     slashLFrame=0
     slashLStartTime=0
     slashLDone=False
-elif player.direction=='right'and slashDone:
+elif player1.direction=='right'and slashDone:
     slashFrame=0
     slashStartTime=0
     slashDone=False

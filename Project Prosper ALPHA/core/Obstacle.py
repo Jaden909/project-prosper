@@ -11,7 +11,12 @@ class Obstacle:
             self.scriptFile=self.data['Script']
             self.blockMovement=self.data['BlockMovement']
             self.sprite=PurePath(*self.data['Sprite'])
-            obCache[self.type]=pygame.image.load(self.sprite)
+            try:
+                obCache[self.type]
+            except KeyError:
+                obCache[self.type]=pygame.image.load(self.sprite).convert_alpha()
+            #print(self.data['Data'])
+            self.obData=copy.deepcopy(self.data['Data'])
             #print(sys.getsizeof(self.sprite))  
             self.harvestLevel=self.data['HarvestLevel']
             if self.data['Animation'] is not None:
@@ -40,6 +45,7 @@ class Obstacle:
             self.frame=0
             self.startTime=0
             self.done=True
+            self.obData=None
         elif id=='escape':
             self.data=obstacleData[0]
             self.type=self.data['Type']
@@ -54,8 +60,11 @@ class Obstacle:
             self.frame=0
             self.startTime=0
             self.done=True
+            self.obData=None
         if self.scriptFile is not None:
-            self.script=open(PurePath('scripts',self.scriptFile)).read()
+            with open(PurePath('scripts',self.scriptFile)) as script:
+                self.script=script.read()
+
          
         else:
             self.script=None
@@ -79,14 +88,14 @@ class Obstacle:
                 #PyEngine.animation(tree,8,5,screen,self.rect.left,self.rect.top)
             if destorySelf and not inStruct:
                 for tile in tiles:
-                    if tile.id==player.id:
+                    if tile.id==player1.id:
                         #print(self.id)
                         tile.obstacles.pop(self.posid)
                         tile.obstacles.insert(self.posid,Obstacle('none',self.colisRect,self.posid)) 
                         #self.killMe=True
             elif destorySelf:
                 for structure in structures:
-                    if structure.id==player.id:
+                    if structure.id==player1.id:
                         #print(self.id)
                         structure.obstacles.pop(self.posid)
                         structure.obstacles.insert(self.posid,Obstacle('none',self.colisRect,self.posid)) 

@@ -1,32 +1,33 @@
 """Game Engine for Python. Requires Pygame.""" 
 import pygame,json,os,sys,importlib,math,pathlib,gc
+
 pygame.init()
 buttons,messages,elements,_mouseDown,liveProjectiles=[],[],[],False,[]
 
 #Add auto wrap to textbox
-class Message:
-    "Creates a message that can be sent and recieved"
-    def __init__(self,name):
-        self.name=name
-        message={'name':self.name,'state':False}
-        messages.append(message)
-    def send(self):
-        for message in messages:
-            if message.get('name')==self.name:
-                message.update(state=True)
-    def unsend(self):
-        for message in messages:
-            if message.get('name')==self.name:
-                message.update(state=False)
-    def listen(self):
-        for message in messages:
-            if message.get('state'):
-                return True
-            else:
-                return False
+#class Message:
+#    "Creates a message that can be sent and recieved"
+#    def __init__(self,name):
+#        self.name=name
+#        message={'name':self.name,'state':False}
+#        messages.append(message)
+#    def send(self):
+#        for message in messages:
+#            if message.get('name')==self.name:
+#                message.update(state=True)
+#    def unsend(self):
+#        for message in messages:
+#            if message.get('name')==self.name:
+#                message.update(state=False)
+#    #def listen(self):
+#    #    for message in messages:
+#    #        if message.get('state'):
+#    #            return True
+#    #        else:
+#    #            return False
 class GameButton:
     """Create a button that can trigger a function if clicked on or a message is recieved (if one is provided)"""
-    def __init__(self,x:int=0,y:int=0,function=None,notHoverSprite:pygame.Surface='default',hover:bool=True,active:bool=True,hoverSprite:pygame.Surface='default',imageRes:int=64,image:str='Defaults\\DEFAULTBUTTON.png',imageResX:int=0,imageResY:int=0,message:Message=None,hoverAlt=None,hold=False):
+    def __init__(self,x:int=0,y:int=0,function=None,notHoverSprite:pygame.Surface|str='default',hover:bool=True,active:bool=True,hoverSprite:pygame.Surface|str='default',imageRes:int=64,image:str='Defaults\\DEFAULTBUTTON.png',imageResX:int=0,imageResY:int=0,message=None,hoverAlt=None,hold=False,scale=(1,1)):
         self.hovering=False
         #REQUIRED ARGS  
         self.x=x
@@ -39,6 +40,8 @@ class GameButton:
             self.square=True
         if image is not None:
             self.image=pygame.image.load(image).convert()
+        else:
+            self.image=None
         self.imageRes=imageRes
         self.function=function
         self.hover=hover
@@ -63,11 +66,14 @@ class GameButton:
         else:
             self.hoverAlt=None
         self.hold=hold
+        self.scale=scale
+        self.run=False
         buttons.append(self)    
     #Blits button to screen provided
     def show(self,screen:pygame.surface.Surface):
         'Blit button to screen. Screen to blit to required. Requires defined image'
-        screen.blit(self.image,(self.x,self.y))
+        if self.image is not None:
+            screen.blit(self.image,(self.x,self.y))
     
     #Listens for mouse clicks: should be in a loop to work properly
     def listen(self,screen=None):    
@@ -79,6 +85,8 @@ class GameButton:
             if self.hover:    
                 if self.square:
                     mouseX,mouseY=pygame.mouse.get_pos()
+                    mouseX/=self.scale[0]
+                    mouseY/=self.scale[1]
                     if mouseX>self.x and mouseX<self.x+self.imageRes and mouseY>self.y and mouseY<self.y+self.imageRes:
                         pygame.mouse.set_cursor(self.hoverCursor)
                         if self.hoverAlt is not None and screen is not None:
@@ -89,6 +97,8 @@ class GameButton:
                         self.hovering=False
                 else:
                     mouseX,mouseY=pygame.mouse.get_pos()
+                    mouseX/=self.scale[0]
+                    mouseY/=self.scale[1]
                     if mouseX>self.x and mouseX<self.x+self.imageResX and mouseY>self.y and mouseY<self.y+self.imageResY:
                         pygame.mouse.set_cursor(self.hoverCursor)
                         if self.hoverAlt is not None and screen is not None:
@@ -102,6 +112,8 @@ class GameButton:
             if left and self.function:
                 if self.square:    
                     mouseX,mouseY=pygame.mouse.get_pos()
+                    mouseX/=self.scale[0]
+                    mouseY/=self.scale[1]
                     if mouseX>self.x and mouseX<self.x+self.imageRes and mouseY>self.y and mouseY<self.y+self.imageRes and not _mouseDown:
                         self.function()
                         _mouseDown=True
@@ -109,6 +121,10 @@ class GameButton:
                         self.function()
                 else:
                     mouseX,mouseY=pygame.mouse.get_pos()
+                    #print(mouseX)
+                    mouseX/=self.scale[0]
+                    mouseY/=self.scale[1]
+                    #print(mouseX)
                     if mouseX>self.x and mouseX<self.x+self.imageResX and mouseY>self.y and mouseY<self.y+self.imageResY and _mouseDown==False:
                         self.function()
                         _mouseDown=True
@@ -118,6 +134,29 @@ class GameButton:
             if self.message and self.function:
                 if self.message.listen():
                     self.function()
+    def listenHold(self,event):
+        "Runs function every frame until the mouse button is released"
+        #print(self.run)
+        if self.square:    
+            mouseX,mouseY=pygame.mouse.get_pos()
+            if mouseX>self.x and mouseX<self.x+self.imageRes and mouseY>self.y and mouseY<self.y+self.imageRes:
+                if event.type==pygame.MOUSEBUTTONDOWN:
+                    self.run=True
+                    self.offset=(mouseX-self.x,mouseY-self.y)
+                elif event.type==pygame.MOUSEBUTTONUP:
+                    self.run=False
+                if self.run:
+                    self.function()
+        else:
+            mouseX,mouseY=pygame.mouse.get_pos()
+            if mouseX>=self.x and mouseX<=self.x+self.imageResX and mouseY>=self.y and mouseY<=self.y+self.imageResY:
+                if event.type==pygame.MOUSEBUTTONDOWN:
+                    self.offset=(mouseX-self.x,mouseY-self.y)
+                    self.run=True
+                elif event.type==pygame.MOUSEBUTTONUP:
+                    self.run=False
+            if self.run:
+                self.function() 
     def listenPulse(self):
         "Listens for hover once. Should NOT be used in a loop. Useful for controllers."
         if self.active and self.function:
@@ -133,6 +172,8 @@ class GameButton:
         self.active=True
     def disable(self):
         self.active=False
+    def updatePos(self,x,y):
+        self.x,self.y=x,y
 class Vector2:
     def __init__(self,x:int|float,y:int|float):
         self.value=(x,y)
@@ -149,7 +190,8 @@ class StaticImage:
         self.y=y     
         self.image=pygame.image.load(image).convert()
     def show(self,screen):
-        screen.blit(self.image,(self.x,self.y))
+        if self.image is not None:
+            screen.blit(self.image,(self.x,self.y))
 class TextBox:
     def __init__(self,text:str,x:int,y:int,height:int,width:int,fontName:str,size:int,bold:bool,italic:bool,textColor:str|tuple,bgColor:str|tuple|None,borderColor:str|tuple|None,borderWidth:int,textOffset:tuple,tooltipText=''):
         self.text=text
@@ -201,7 +243,7 @@ class TextBox:
         else:
             self.tooltip=False
         if self.tooltip:
-            self.tooltips=autoWrap(self.tooltipText,self.font.size(self.text)[1]+self.textOffset[0]*2,self.font,self.textColor)
+            self.tooltips=autoWrap(self.tooltipText,self.font.size(self.text)[0]+self.textOffset[0]*2,self.font,self.textColor)
             self.extraLines=len(self.tooltips)
             #self.oldHeight=self.height
             self.height=self.oldHeight+(10*self.extraLines+self.textOffset[1])+10
@@ -224,27 +266,29 @@ class TextBox:
                 screen.blit(self.bg,self.rect)
         screen.blit(self.textBox,self.rect.move(self.textOffset))
         for line in self.tooltips:
-            screen.blit(line,(self.rect.left+self.textOffset[0],self.rect.top+self.tooltips.index(line)*15+self.textOffset[1]+10))
+            screen.blit(line,(self.rect.left+self.textOffset[0],self.rect.top+self.tooltips.index(line)*15+self.textOffset[1]+23))
         if self.borderColor is not None:
             pygame.draw.rect(screen,self.borderColor,self.rect,self.borderWidth)
-            pygame.draw.rect(screen,self.borderColor,self.titleRect,self.borderWidth-1)
+            if self.tooltips:
+                pygame.draw.rect(screen,self.borderColor,self.titleRect,self.borderWidth-1)
         
-    def snapToMouse(self,borderX:int,borderY:int):
+    def snapToMouse(self,borderX:int,borderY:int,scale=(1,1)):
         
         if self.rect.right<borderX and self.rect.top>=borderY:
-            self.rect.bottomleft=pygame.mouse.get_pos()
+            self.rect.bottomleft=(pygame.mouse.get_pos()[0]/scale[0],pygame.mouse.get_pos()[1]/scale[1])
         if self.rect.right<borderX and self.rect.top<=borderY:
-            self.rect.topleft=pygame.mouse.get_pos()
+            self.rect.topleft=(pygame.mouse.get_pos()[0]/scale[0],pygame.mouse.get_pos()[1]/scale[1])
         if self.rect.right>borderX  and self.rect.top>=borderY:
-            self.rect.bottomright=pygame.mouse.get_pos()
+            self.rect.bottomright=(pygame.mouse.get_pos()[0]/scale[0],pygame.mouse.get_pos()[1]/scale[1])
         if self.rect.right>borderX  and self.rect.top<=borderY:
-            self.rect.topright=pygame.mouse.get_pos()
+            self.rect.topright=(pygame.mouse.get_pos()[0]/scale[0],pygame.mouse.get_pos()[1]/scale[1])
 class Projectile:
-    def __init__(self,width:float,height:float,speed:float,acceleration:float,lifetime:float,shootMouse:bool,sprite,xAcc=0,yAcc=0,x=0,y=0,offset=(0,0)) -> None:
+    def __init__(self,width:float,height:float,speed:float,acceleration:float,lifetime:float,shootMouse:bool,sprite,damage,xAcc=0,yAcc=0,x=0,y=0,offset=(0,0),pierce=0) -> None:
         self.x,self.y=x,y
         self.width,self.height=width,height
         self.rect=pygame.Rect(self.x,self.y,self.width,self.height)
         self.speed=speed
+        self.startSpeed=speed
         self.acceleration=acceleration
         self.maxLifetime=lifetime
         self.lifetime=self.maxLifetime
@@ -254,17 +298,20 @@ class Projectile:
         self.yAcc=yAcc
         self.offset=offset
         self.sprites=[]
-        print(sprite)
+        self.damage=damage
+        self.pierce=pierce
+        #print(sprite)
         #print('HELP MEEEEEEEEEEEEEEEEE')
-        if type(sprite) is str:
+        try:
             self.projSurf=pygame.image.load(sprite)
             self.sprite=pygame.image.load(sprite)
-        elif type(sprite) is list:
+        except:
+            if type(sprite) is list:
             
-            self.rotSprites=[]
-            for sprites in sprite:
-                self.sprites.append(sprites)
-        print(self.sprites)
+                self.rotSprites=[]
+                for sprites in sprite:
+                    self.sprites.append(sprites)
+        #print(self.sprites)
         #print('yes')
         self.active=False
         
@@ -279,7 +326,7 @@ class Projectile:
         if self.shootMouse or self.target:
             #print('moude')
             self.correctionAngle=270
-            self.dx, self.dy = self.mx+8 - self.rect.centerx, self.rect.centery+8 - self.my
+            self.dx, self.dy = self.mx - self.rect.centerx, self.rect.centery - self.my
             #self.angle=90
             self.angle =math.degrees(math.atan2(-self.dy, self.dx)) - self.correctionAngle
             if self.sprites:
@@ -303,20 +350,31 @@ class Projectile:
         self.frame=0
         liveProjectiles.append(self)
         #del self
-    def update(self,screen:pygame.Surface):
+    def update(self,screen:pygame.Surface,rects:list[pygame.Rect]|None=None):
+        #Run each frame to make projectiles move. You can optionally include a list of rects to check for collisions
         self.speed+=self.acceleration
         self.x+=self.speed*self.xAcc
         self.y+=self.speed*self.yAcc
+        self.rect.topleft=(self.x,self.y)
         if self.sprites:
             self.frame, self.startTime,self.done=animation(self.sprites,200,screen,self.x-self.width/2-12,self.y-self.height/2-12,self.startTime,self.frame)
         else:
             self.projSurf.set_colorkey((0,0,0))
-            screen.blit(self.projSurf,(self.x-self.width/2-12,self.y-self.height/2-12))
+            screen.blit(self.projSurf,(self.x-self.width/2,self.y-self.height/2))
         #screen.blit(self.projSurf,(self.x-self.projSurfCopy.get_width()/2,self.y-self.projSurfCopy.get_height()/2))
+        if rects:
+            collision=self.rect.collidelist(rects)
+            if collision!=-1:
+                if self.pierce>=1:
+                    self.pierce-=1
+                else:
+                    self.lifetime=0
+        
         self.lifetime-=1
         #print(self.lifetime)
         if self.lifetime<=0:
             self.active=False
+            self.speed=self.startSpeed
             #print(self)
             #print(gc.get_referrers(self)[1:])
             #print(sys.getsizeof(math.pi))
@@ -328,7 +386,8 @@ class Projectile:
             #del self.projSurf
             #del self.projSurfCopy
             #del self
-            
+        if rects:
+            return collision   
 def animation(moveList:list,frameDelay:int,screen:pygame.Surface,x,y,startTime:int,frame:int):
     """Pygame animation. returns current frame, startTime and done. Put this in a loop and supply the returned frame and startTime to work properly."""
     #print(moveList)
@@ -478,5 +537,5 @@ def getProjectiles():
 if __name__=='__main__':
     print('This script doesn\'t work on its own. Import it into a project to use the functions and classes defined here')
 else:
-    print('Using PyEngine v0.5 APLHA') 
+    print('Using PyEngine v0.5.2 APLHA') 
     print('PyEngine Warning: A memory leak has been discovered within the TextBox class. If the program leaks memory, it is likely because of the render() method')

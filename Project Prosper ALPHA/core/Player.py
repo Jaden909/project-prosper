@@ -93,24 +93,36 @@ class Player:
                     if not blockMovement and not self.stunned:
                         self.y+=2
                         self.doHunger()
-                if self.iFrames>0:
-                    screen.blit(playerImgI,(self.x,self.y))
-                elif carryingItem:
+                if carryingItem:
                     if heldItemm.type=='Tool':
                         self.itemSprite=pygame.transform.scale(pygame.image.load(PurePath('items\\'+heldItemm.spriteLocation)),(16,16))
                         self.itemSpriteFlipped=pygame.transform.flip(self.itemSprite,True,False)
                     else:
                         self.itemSprite=pygame.transform.scale(heldItemm.sprite,(16,16))
                         self.itemSpriteFlipped=pygame.transform.flip(self.itemSprite,True,False)
-                    if self.direction=='right':
+                    if self.direction=='right' and 'hideWhenHolding' not in heldItemm.tags:
                         screen.blit(self.itemSprite,(self.x+22,self.y+6))
-                    elif self.direction=='left':
+                    elif self.direction=='left'and 'hideWhenHolding' not in heldItemm.tags:
                         screen.blit(self.itemSpriteFlipped,(self.x-8,self.y+6))
-                    screen.blit(self.sprites[self.direction+'Hold'],(self.x,self.y))
-                    if self.direction=='down':
+                    if not self.iFrames%2 and self.iFrames!=0:
+                        pass
+                    elif not self.stunned:
+                        screen.blit(self.sprites[self.direction+'Hold'],(self.x,self.y))
+                    elif self.stunned:
+                        playerCopy=self.sprites[self.direction].copy()
+                        playerCopy.blit(stun,(0,0))
+                        screen.blit(playerCopy,(self.x,self.y))
+                    if self.direction=='down'and 'hideWhenHolding' not in heldItemm.tags:
                         screen.blit(self.itemSprite,(self.x+8,self.y+6))
                 else:
-                    screen.blit(self.sprites[self.direction],(self.x,self.y))
+                    if not self.iFrames%2 and self.iFrames!=0:
+                        pass
+                    elif not self.stunned:
+                        screen.blit(self.sprites[self.direction],(self.x,self.y))
+                    elif self.stunned:
+                        playerCopy=self.sprites[self.direction].copy()
+                        playerCopy.blit(stun,(0,0))
+                        screen.blit(playerCopy,(self.x,self.y))
                 self.playerRect=pygame.rect.Rect(self.x,self.y,30,32)
                 if self.iFrames>0:
                     self.iFrames-=1
@@ -119,7 +131,7 @@ class Player:
                     if self.stunDuration<=0:
                         self.stunned=False
             else:
-                print(self.deathCooldown)
+                #print(self.deathCooldown)
                 self.deathCooldown-=1
                 if self.deathCooldown<=0:
                     self.hp=self.maxHp/2
@@ -132,7 +144,7 @@ class Player:
         for tile in tiles:
             if tile.checkCollisions():
                 self.id=tile.id
-                print(player.id)
+                #print(player1.id)
     def hurt(self,damage,iFrames=40):
         if self.iFrames==0:
             self.hp-=damage

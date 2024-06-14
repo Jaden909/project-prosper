@@ -1,5 +1,5 @@
 if currentStruct.type!='none':
     droppedItems.clear()
     inStruct=True
-    player.x=230
-    player.y=40
+    player1.x=230
+    player1.y=40

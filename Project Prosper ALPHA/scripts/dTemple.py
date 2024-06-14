@@ -1,5 +1,5 @@
 
 droppedItems.clear()
 inStruct=True
-player.x=255
-player.y=475
+player1.x=255
+player1.y=475

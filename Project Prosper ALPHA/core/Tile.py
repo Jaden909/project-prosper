@@ -29,12 +29,12 @@ class Tile:
     def checkCollisions(self):
         #print(tileRects)
         #print(self.playerRect.collidelist(tileRects))
-        if player.playerRect.colliderect(self.tileRect):
-            player.currentBiome=self.biome
+        if player1.playerRect.colliderect(self.tileRect):
+            player1.currentBiome=self.biome
             #screen.blit(self.color,(self.x,self.y),)
-            #print(f'Current Biome: {player.currentBiome}')
+            #print(f'Current Biome: {player1.currentBiome}')
             #print(f'id: {self.id}')
-            print('god help me')
+            #print('god help me')
             return True
             
 

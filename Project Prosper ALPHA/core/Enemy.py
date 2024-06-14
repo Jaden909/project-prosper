@@ -17,13 +17,13 @@ class Enemy:
         self.maxHp=self.data['MaxHP']
         self.hp=self.maxHp
         self.iFrames=20
-        self.tileId=player.id
+        self.tileId=player1.id
         self.extraData=self.data['Extra Data']
         self.drops=self.data['Drops']
         
     def update(self):
         global currentEnemy
-        if self.tileId==player.id:
+        if self.tileId==player1.id:
             currentEnemy=self
             exec(self.ai,globals())
             
@@ -33,9 +33,10 @@ class Enemy:
                         if self.rect.colliderect(slashRect) and self.iFrames<=0:
                             self.hp-=getItem(currentItem['Item']).damage
                             self.iFrames=slashSpeed
-                            print(self.iFrames)
+                            #print(self.iFrames)
                             if self.hp<=0:
                                  self.die()
+            screen.blit(self.sprite,self.rect)
             self.iFrames-=1
     def die(self):
         activeEnemies.remove(self)
@@ -43,6 +44,12 @@ class Enemy:
             if random.choice(range(100))<item['Chance']:
                 for i in range(random.choice(item['Amount'])):
                     droppedItems.append({"Type":item['Item'],"Position":self.rect})
+    def damage(self,damage,iFrames=200):
+        self.hp-=damage
+        self.iFrames=iFrames
+        #print(self.iFrames)
+        if self.hp<=0:
+             self.die()
     def spawn(self):
 
             activeEnemies.append(Enemy(self.id))

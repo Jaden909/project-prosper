@@ -1,3 +1,3 @@
 droppedItems.clear()
-player.x,player.y=entrancePos.left+18,entrancePos.top+20
+player1.x,player1.y=entrancePos.left+18,entrancePos.top+20
 inStruct=False
