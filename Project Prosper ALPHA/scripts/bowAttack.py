@@ -1,6 +1,7 @@
 ammo=find(40,range(24))
-if ammo is not None:
-    removeOne(ammo['Slot'])
+if ammo is not None or infinity:
+    if not infinity:
+        removeOne(ammo['Slot'])
     #Shoot arrow
     currentProjectile='arrow'
     for pool in projectilePools:

@@ -1,9 +1,13 @@
 class Tile:
-    def __init__(self,x,y,biome,id):
+    def __init__(self,x,y,biome,id,soundFolder=PurePath('sfx','tiles')):
         self.x=x
         self.y=y
         self.biome=biome
         self.obRects=[]
+        try:
+            self.sounds={'footsteps':os.listdir(PurePath(soundFolder,self.biome,'footstep'))}
+        except:
+            self.sounds=None
         #Append new tiles with the cave biome and bind them to the entrances
         #if self.biome=='g':
         #        self.color=pygame.image.load(PurePath('biomes','grass.png'))
@@ -47,9 +51,10 @@ class Tile:
         self.obstacles=[]
         self.structure=None
         if self.biome=='g':
+            
             x=0
             y=0
-            possibilities=['none','none','none',1,'none','none','none',3,'none','none']
+            possibilities=['none','none','none',1,'none','none','none',3,'none','none',2]
             for i in range(64):
                 type=random.choice(possibilities)
                 if type==1:
@@ -114,7 +119,7 @@ class Tile:
             x=0
             y=0
             for i in range(64):
-                type=random.choice(['none','none',4,18])
+                type=random.choice(['none','none',4,18,21])
                 if type=='tree':
                     dropsItem=1
                 elif type=='stone':

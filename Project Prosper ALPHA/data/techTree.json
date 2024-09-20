@@ -1,0 +1,6 @@
+[{"gridw":5,"gridh":3,"gridpos":[1,2],"title":"Oil Processing","desc":"Extract and refine oil from the ground","gridsize":32,"parents":null,"cost":" ","costIcon":"none.png","trueCost":0,"costVar":"ram","completeTime":1000,"lineFrom":"right","lineTo":"left"},
+{"gridw":5,"gridh":3,"gridpos":[7,2],"title":"Plastics","desc":"Make plasic for circuit boards","gridsize":32,"parents":[0],"cost":" ","costIcon":"none.png","trueCost":0,"costVar":"ram","completeTime":1000,"lineFrom":"right","lineTo":"left"},
+{"gridw":5,"gridh":3,"gridpos":[1,6],"title":"Silicon Processing","desc":"Silicon wafers","gridsize":32,"parents":null,"cost":" ","costIcon":"none.png","trueCost":0,"costVar":"ram","completeTime":1000,"lineFrom":"right","lineTo":"left"},
+{"gridw":5,"gridh":3,"gridpos":[1,10],"title":"Wire Extrusion","desc":"Turn copper into wires","gridsize":32,"parents":null,"cost":" ","costIcon":"none.png","trueCost":0,"costVar":"ram","completeTime":1000,"lineFrom":"right","lineTo":"left"},
+{"gridw":5,"gridh":3,"gridpos":[13,6],"title":"Central Processing Unit","desc":"Digital computing","gridsize":32,"parents":[1,2,3],"cost":" ","costIcon":"none.png","trueCost":0,"costVar":"ram","completeTime":1000,"lineFrom":"right","lineTo":"left"}
+]

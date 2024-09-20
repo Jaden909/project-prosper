@@ -22,7 +22,7 @@ class Structure:
         self.id=id
         #self.tileRect=pygame.Rect(self.x,self.y,512,512)
         #tileRects.append(self.tileRect)
-        self.obstacles=[]
+        #self.obstacles=[]
         self.createObstacles()
     def createObstacles(self):
         global seed
@@ -31,7 +31,7 @@ class Structure:
             x=0
             y=0
             for i in range(64):
-                type=random.choice(['none','none','none',6,2,6,7,2,8,'none','none','none',9])
+                type=random.choice(['none','none','none',6,2,6,7,2,8,'none','none','none',9,23,23,23])
                 if i in self.safeZone:
                     type='none'
                 if i==self.escape:

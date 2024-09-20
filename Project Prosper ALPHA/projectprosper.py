@@ -1,10 +1,14 @@
-import pygame,PyEngine,random,time as realTime,ctypes,os,sys,threading,pickle,copy,gc,math
+#import pydub.effects
+#import pydub.playback
+import pygame,PyEngine,random,time as realTime,ctypes,os,sys,threading,pickle,copy,gc,math,traceback#,pydub
 from pathlib import PurePath
-
+from research import research
 if sys.platform=='win32':
     ctypes.windll.shcore.SetProcessDpiAwareness(0)
 #EXPERIMENTAL SCALING
 SCALE=(1,1)
+#Determines how broken old saves are: Whole number changes break saves completely, decimal number changes don't include all new game content. Ex: version 1 would completely break version 0 saves, while version 0.1 would only prevent some new content from appearing
+saveVersion=0
 #SCALE=(2,2)
 #SCALE=(3.75,2.109375)
 print(f'Window Size: {512*SCALE[0]}x{512*SCALE[1]}')
@@ -13,6 +17,7 @@ mainScreen=pygame.display.set_mode((512*SCALE[0],512*SCALE[1]),pygame.RESIZABLE)
 screen=pygame.Surface((512,512))
 #screen=pygame.display.set_mode((512,512),pygame.RESIZABLE)
 pygame.display.set_caption('Project Prosper','idk')
+pygame.display.set_icon(pygame.image.load(PurePath('misc','icon.png')))
 horn0=pygame.mixer.Sound(PurePath('sfx','horn0.wav'))
 horn1=pygame.mixer.Sound(PurePath('sfx','horn1.wav'))
 horn2=pygame.mixer.Sound(PurePath('sfx','horn2.wav'))
@@ -21,47 +26,67 @@ horns=[horn0,horn1,horn2,horn3]
 pygame.mixer_music.load(PurePath('sfx','test2.wav'))
 #pygame.mixer_music.load(PurePath('sfx','gameOver.mid'))
 #pygame.mixer_music.play()
+#d:pydub.AudioSegment=pydub.AudioSegment.from_wav(PurePath('sfx','horn0.wav'))
 
-#NOTES
-#Added experimental scale setting
-#Added scale argument to TextBox and GameButton classes to support window scaling
-#Added VERY EXPERIMENTAL mod support (items only right now)
-#Added Data value to obstacles
+#d.speedup(5)
+#d.set_frame_rate(2)
+#pygame.mixer.Sound(pydub.effects.speedup(d,random.choice(range(90,110))/100).export(format='wav')).play()
+#print(type(d))
 
-#Furnaces have unique inventories
-#Changed how inventory works to allow for selectively finding inventory rect collisions
-#Added function to get currently hovered slot
-#PyEngine TextBox outlines now autofit properly without a tool tip
-#PyEngine added listenHold() function. (runs functions every frame until mouseup)
-#Enemies are visible again (I was literally just missing a blit() call)
-#Inventory now fills from the beginning
-#Common sprites are converted now improving fps
-#Finally fixed player having old sprite with i frames
-#Slightly changed boss summon method to work with new furnace inventories
-#Desert chest is now functional as a chest
-#Updated furnace visuals
-#Added visual indicator for when player is stunned
-#Boss actually uses vine attack now (oops, had it disabled for testing)
-#Updated pygame to 2.4.1 for massive performance improvements
-#Added Chest item/object/recipe
-#Added loot tables
-#Added hideWhenHolding attribute to tools (hides the item sprite when holding it, used for animations and stuff with the tool)
-#Added warning when loading an item's tags fails
-#Added holdScript attribute to items (runs every frame the player is holding that item)
-#PyEngine speed resets when a projectile dies
-#PyEngine Fixed annoying bug where projectiles were missing their target (visual offset wasn't included in angle calculations)
-#Added cursorChange variable to override default cursors
-#Removed A LOT of print statements from running
-#Added ammo and find function
+
+# NOTES
+# bow responds to infinity
+# 
+# 
+# PyEngine 
+# 
+# 
+# PyEngine 
+# 
+# 
+# 
+# 
+# 
+# 
+
+# 
+
+# 
+# 
+# 
+
+# Item Tool:
+# 
+# 
+# Current limits:
+# 
+# 
+
+# 
+# 
+# 
+#
+#
+#
+#
+#
+# TODO: Set mute var to True
+# 
+
 
 #PROBLEMS
-#Infinite Cactus
-#Invisible Enemies X
+# 
+# 
+# 
+# 
+# Furnace visual needs fixed
 
 #Future
-#unique inventories X
-#loot tables
-#ranged weapons
+#Load Game screen
+#weather
+#sounds/ambience
+#Load game screen
+#Animate player
 
 #only blit updated areas of screen
 
@@ -75,6 +100,8 @@ pygame.mixer_music.load(PurePath('sfx','test2.wav'))
 currentTime=realTime.localtime()
 eventActive=False
 xmas=False
+
+
 tiles=[]
 #print(currentTime[1],currentTime[2])
 if currentTime[1]==12 and currentTime[2]==1:
@@ -93,34 +120,60 @@ def emuSeason(items):
 smeltDone=False  
 cOb=None
 fueled=False
+
 font=pygame.font.Font('Coure.fon',15)
 bossFont=pygame.font.SysFont('gabriola',30,False,True)
 chatFont=pygame.font.Font('Coure.fon',10)
+
 fastStart=False
 newGameStart=False
 gameStarting=False
 seed=None
+#print(fastStart)
+uiQueue=[]
 currentRecipe=None
 done=False
 inStruct=False
 chestOpen=False
+closeQueue=[]
 chestStuff=[]
+
 tilesLoaded=0
+
 cursorChange=False
 smeltOpen=False
+eventQueue=[]
+playerMoved=False
 obCache={}
+
 maxSpawnDelay=250
 spawnDelay=maxSpawnDelay
 spawnChance=20
+
 fuel=0
 maxFuel=0
 frames=0
+
 startTime=0
 newsOpen=False
 levelMap=[]
 modObjs=[]
 
+footstepDelay=500
+footstepStartTime=0
+oldPlayerPos=(0,0)
+researches=[False for i in range(len(PyEngine.load(PurePath('data','techTree.json'))))]
+
 infinity=True
+# Settings 
+
+advancedTooltips=False
+mute=True
+autosave=True
+drawHitboxes=False
+debugInv=False
+mods=False
+scale=(1,1)
 
 if sys.platform=='win32' or sys.platform=='linux' and not hasattr(sys,'getandroidapilevel'):
     controls={'inv':'e','up':'w','down':'s','left':'a','right':'d'}
@@ -137,34 +190,10 @@ exec(compile(open(PurePath('core','Tile.py')).read(),'Tile.py','exec'),globals()
 exec(compile(open(PurePath('core','Structure.py')).read(),'Structure.py','exec'),globals())
 
 newsOverlay=pygame.image.load(PurePath('misc','nightOverlay.png'))
+unknown=pygame.image.load(PurePath('items','unknown.png'))
 newsOverlay.set_alpha(200)
-ver=PyEngine.TextBox('Project Prosper ALPHA (Spring Update)',0,487,25,410,'coure.fon',15,False,False,'black',(251, 182, 104),(155, 82, 0),2,(5,5)) 
-def getSlot(slots):
-    global slotHover
-    #print(slots)
-    hits=[]
-    trueHits=[]
-    #print(tempInvRects)
-    for rect in invRects:
-        if pygame.Rect((pygame.mouse.get_pos()[0]/SCALE[0],pygame.mouse.get_pos()[1]/SCALE[1]),(16,16)).colliderect(rect):
-            hits.append(invRects.index(rect))
-    #print(hits)
-    for hit in hits:
-        if hit in slots:
-            trueHits.append(hit)
-    #print(trueHits)
-    #print(trueHits)
-    if len(trueHits)==0:
-        slotHover=-1
-    elif len(trueHits)==1:
-        slotHover=trueHits[0]
-    elif len(trueHits)>1:
-        for hit in trueHits:
-            if hit<18:
-                slotHover=max(trueHits)
-                return
-        #print('Warning: multiple invRects found. Choosing highest slot number')
-        slotHover=max(trueHits)
+ver=PyEngine.TextBox('Project Prosper ALPHA (Summer Update)',0,487,25,410,'coure.fon',15,False,False,'black',(251, 182, 104),(155, 82, 0),2,(5,5)) 
+#Main Menu______________________________________________________________________________________________________________________________________________________________________________________
 def newGameToggle():
     global newGameStart
     newGameStart=True
@@ -202,16 +231,16 @@ if not fastStart:
     prosperImg=pygame.image.load(PurePath('misc','menu','prosper.png'))
     mainMenuOverlay=pygame.image.load(PurePath('misc','menu','mainMenuOverlay.png'))
     #mainMenuOverlay.set_alpha(150)
-    newGameButt=PyEngine.GameButton(200,325,newGameToggle,'default',True,True,'default',64,PurePath('misc','menu','button.png'),120,40,None,PurePath('misc','menu','buttonAlt.png'),scale=SCALE)
-    optionsButt=PyEngine.GameButton(200,380,options,'default',True,True,'default',64,PurePath('misc','menu','button.png'),120,40,None,PurePath('misc','menu','buttonAlt.png'),scale=SCALE)
-    exitButt=PyEngine.GameButton(200,435,exit,'default',True,True,'default',64,PurePath('misc','menu','button.png'),120,40,None,PurePath('misc','menu','buttonAlt.png'),scale=SCALE)
-    seedEntry=PyEngine.GameButton(200,60,pygame.key.start_text_input,'default',True,False,'ibeam',64,PurePath('misc','menu','button.png'),120,40,None,None,scale=SCALE)
-    equalButt=PyEngine.GameButton(60,150,lambda:setDistribution('equal'),'default',True,False,'default',64,PurePath('misc','menu','button.png'),120,40,None,PurePath('misc','menu','buttonAlt.png'),scale=SCALE)
-    oceansButt=PyEngine.GameButton(200,150,lambda:setDistribution('oceans'),'default',True,False,'default',64,PurePath('misc','menu','button.png'),120,40,None,PurePath('misc','menu','buttonAlt.png'),scale=SCALE)
-    balancedButt=PyEngine.GameButton(340,150,lambda:setDistribution('balanced'),'default',True,False,'default',64,PurePath('misc','menu','button.png'),120,40,None,PurePath('misc','menu','buttonAlt.png'),scale=SCALE)
-    createWorldButt=PyEngine.GameButton(200,315,startGame,'default',True,False,'default',64,PurePath('misc','menu','button.png'),120,40,None,PurePath('misc','menu','buttonAlt.png'),scale=SCALE)
-    newsButt=PyEngine.GameButton(480,480,news,'default',True,True,'default',32,PurePath('misc','menu','news.png'),120,40,None,PurePath('misc','menu','newsAlt.png'),scale=SCALE)
-    exitNewsButt=PyEngine.GameButton(480,0,notNews,'default',True,True,'default',32,PurePath('misc','menu','exit.png'),120,40,None,PurePath('misc','menu','exitAlt.png'),scale=SCALE)
+    newGameButt=PyEngine.GameButton(200,325,newGameToggle,'default',True,True,'default',64,PurePath('misc','menu','button.png'),120,40,PurePath('misc','menu','buttonAlt.png'),scale=SCALE)
+    optionsButt=PyEngine.GameButton(200,380,options,'default',True,True,'default',64,PurePath('misc','menu','button.png'),120,40,PurePath('misc','menu','buttonAlt.png'),scale=SCALE)
+    exitButt=PyEngine.GameButton(200,435,exit,'default',True,True,'default',64,PurePath('misc','menu','button.png'),120,40,PurePath('misc','menu','buttonAlt.png'),scale=SCALE)
+    seedEntry=PyEngine.GameButton(200,60,pygame.key.start_text_input,'default',True,False,'ibeam',64,PurePath('misc','menu','button.png'),120,40,None,scale=SCALE)
+    equalButt=PyEngine.GameButton(60,150,lambda:setDistribution('equal'),'default',True,False,'default',64,PurePath('misc','menu','button.png'),120,40,PurePath('misc','menu','buttonAlt.png'),scale=SCALE)
+    oceansButt=PyEngine.GameButton(200,150,lambda:setDistribution('oceans'),'default',True,False,'default',64,PurePath('misc','menu','button.png'),120,40,PurePath('misc','menu','buttonAlt.png'),scale=SCALE)
+    balancedButt=PyEngine.GameButton(340,150,lambda:setDistribution('balanced'),'default',True,False,'default',64,PurePath('misc','menu','button.png'),120,40,PurePath('misc','menu','buttonAlt.png'),scale=SCALE)
+    createWorldButt=PyEngine.GameButton(200,315,startGame,'default',True,False,'default',64,PurePath('misc','menu','button.png'),120,40,PurePath('misc','menu','buttonAlt.png'),scale=SCALE)
+    newsButt=PyEngine.GameButton(480,480,news,'default',True,True,'default',32,PurePath('misc','menu','news.png'),120,40,PurePath('misc','menu','newsAlt.png'),scale=SCALE)
+    exitNewsButt=PyEngine.GameButton(480,0,notNews,'default',True,True,'default',32,PurePath('misc','menu','exit.png'),120,40,PurePath('misc','menu','exitAlt.png'),scale=SCALE)
     line=[] 
     seedText=''
     distribution='balanced'
@@ -233,9 +262,15 @@ if not fastStart:
                     elif keys[pygame.K_ESCAPE]:
                         newGameStart=False
                 if keys[pygame.K_SPACE]:
-                    levelMap=pickle.loads(open(PurePath('save','BIOMES'),'rb').read())
-                    tiles=pickle.loads(open(PurePath('save','TILES'),'rb').read())
-                    structures=pickle.loads(open(PurePath('save','STURUCTURES'),'rb').read())
+                    levelMap=pickle.loads(open(PurePath('saves','auto','BIOMES'),'rb').read())
+                    tiles=pickle.loads(open(PurePath('saves','auto','TILES'),'rb').read())
+                    structures=pickle.loads(open(PurePath('saves','auto','STRUCTURES'),'rb').read())
+                    meta=PyEngine.load(PurePath('saves','auto','meta.json'))
+                    if meta['version']<saveVersion:
+                        print('WARNING: Loading old save. Not all new content will be availible')
+                    elif meta['version']>saveVersion:
+                        print('WARNING: Loading new save in old version. THIS IS VERY LIKELY TO CAUSE CRASHES AND SAVE CORRUPTIONS!')
+                    #print(levelMap,tiles,structures)
                     #newGameStart=True
                     PyEngine.disableAll()
                     gameStarting=True
@@ -333,9 +368,16 @@ slashL5=pygame.image.load(PurePath('SlashLeft','slash5.png'))
 slashL6=pygame.image.load(PurePath('SlashLeft','slash6.png'))
 slashL7=pygame.image.load(PurePath('SlashLeft','slash7.png'))
 
+slashSpeed=50
 slashLFrame=0
 slashLStartTime=0
 slashLDone=True
+
+slash=[slash0,slash1,slash2,slash3,slash4,slash5,slash6,slash7]
+slashL=[slashL0,slashL1,slashL2,slashL3,slashL4,slashL5,slashL6,slashL7]
+
+slashAnimation=PyEngine.Animation(slash,slashSpeed)
+slashLAnimation=PyEngine.Animation(slashL,slashSpeed)
 
 invOverlay=pygame.image.load(PurePath('objects','invOverlay.png')).convert_alpha()
 invOverlay2=pygame.image.load(PurePath('objects','invOverlay2.png')).convert_alpha()
@@ -371,8 +413,6 @@ stun=pygame.image.load(PurePath('misc','stun.png')).convert_alpha()
 bgCache={'g':pygame.image.load(PurePath('biomes','grass.png')).convert_alpha(),'d':pygame.image.load(PurePath('biomes','desert.png')).convert_alpha(),'f':pygame.image.load(PurePath('biomes','forest.png')).convert_alpha(),'o':pygame.image.load(PurePath('biomes','ocean.png')).convert_alpha()}
 obCache={}
 
-slash=[slash0,slash1,slash2,slash3,slash4,slash5,slash6,slash7]
-slashL=[slashL0,slashL1,slashL2,slashL3,slashL4,slashL5,slashL6,slashL7]
 
 #cactus=pygame.image.load('objects','cactus.png')
 
@@ -405,7 +445,7 @@ if mobile:
     downButt=PyEngine.GameButton(55,430,down,imageRes=32,image=PurePath('misc','ui','down.png'),hold=True,scale=SCALE)
 
 selectorPos=1
-debugInv=False
+
 chatOpen=False
 quickGen=True
 snapToMouse=False
@@ -413,7 +453,7 @@ valid=False
 invFull=False
 tileRects=[]
 craftRects=[]
-
+scriptQueue=[]
 obRects=[]
 droppedItems=[]
 itemObjs=[]
@@ -422,25 +462,29 @@ recipeObjs=[]
 enemyObjs=[]
 enemies=[]
 activeEnemies=[]
-mods=True
+
 projectilePools={}
-mm=False
+mouseMotion=False
 mapMode=False
+    
 frame=0
 fframe=0
 currentProjectile='basic'
 invOpen=False
 holdingItem=False
+ram=100
+electricity=0
 #key: white=naturally generated with no collision ,black=air/none,blue=block,red=naturally generated with collision/enemy
-drawHitboxes=False
+    
 ii=0
-slashSpeed=50
+
 line1,line2,line3='','',''
 time=0
 darker,lighter=True,False
 playerImg=pygame.image.load(PurePath('biomes','bigPlayer.png'))
 playerImgI=pygame.image.load(PurePath('biomes','bigPlayerI.png'))
-pygame.display.set_icon(pygame.image.load(PurePath('misc','icon.png')))
+
+#Load core object data
 recipes=PyEngine.load(PurePath('data','recipes.json'))
 items=PyEngine.load(PurePath('data','items.json'))
 enemyData=PyEngine.load(PurePath('data','enemies.json'))
@@ -450,13 +494,43 @@ commands=PyEngine.load(PurePath('data','commands.json'))
 projectiles=PyEngine.load(PurePath('data','projectiles.json'))
 
 for projectile in projectiles:
-    projectilePools[projectile['Name']]=[PyEngine.Projectile(projectile['width'],projectile['height'],projectile['speed'],projectile['acceleration'],projectile['lifetime'],projectile['shootMouse'],PurePath(*projectile['sprite']),offset=projectile['offset'],damage=projectile['damage'])for i in range(projectile['poolCount'])]
+    projectilePools[projectile['Name']]=[PyEngine.Projectile(projectile['width'],projectile['height'],projectile['speed'],projectile['acceleration'],projectile['lifetime'],projectile['shootMouse'],PurePath(*projectile['sprite']),offset=projectile['offset'],damage=projectile['damage'],accuracy=projectile['accuracy'])for i in range(projectile['poolCount'])]
 #print([projectileObjs])
 #0-17 Normal slots, 18-23 hotbar slots, 24+ crafting slots,34-36 furnace slots,37-51 chest slots
 #Debug Inv
-inventory=[{'Slot':0,'Item':12,'Amount':5},{'Slot':1,'Item':20,'Amount':1},{'Slot':2,'Item':8,'Amount':1},{'Slot':3,'Item':26,'Amount':1},{'Slot':4,'Item':28,'Amount':1},{'Slot':5,'Item':39,'Amount':1},{'Slot':6,'Item':40,'Amount':4},{'Slot':7,'Item':None,'Amount':0},{'Slot':8,'Item':None,'Amount':0},{'Slot':9,'Item':None,'Amount':0},{'Slot':10,'Item':None,'Amount':0},{'Slot':11,'Item':None,'Amount':0},{'Slot':12,'Item':None,'Amount':0},{'Slot':13,'Item':None,'Amount':0},{'Slot':14,'Item':None,'Amount':0},{'Slot':15,'Item':None,'Amount':0},{'Slot':16,'Item':None,'Amount':0},{'Slot':17,'Item':None,'Amount':0},{'Slot':18,'Item':None,'Amount':0},{'Slot':19,'Item':None,'Amount':0},{'Slot':20,'Item':None,'Amount':0},{'Slot':21,'Item':None,'Amount':0},{'Slot':22,'Item':None,'Amount':0},{'Slot':23,'Item':None,'Amount':0},{'Slot':24,'Item':None,'Amount':0},{'Slot':25,'Item':None,'Amount':0},{'Slot':26,'Item':None,'Amount':0},{'Slot':27,'Item':None,'Amount':0},{'Slot':28,'Item':None,'Amount':0},{'Slot':29,'Item':None,'Amount':0},{'Slot':30,'Item':None,'Amount':0},{'Slot':31,'Item':None,'Amount':0},{'Slot':32,'Item':None,'Amount':0},{'Slot':33,'Item':None,'Amount':0},{'Slot':34,'Item':None,'Amount':0},{'Slot':35,'Item':None,'Amount':0},{'Slot':36,'Item':None,'Amount':0},{'Slot': 37, 'Item': None, 'Amount': 0}, {'Slot': 38, 'Item': None, 'Amount': 0}, {'Slot': 39, 'Item': None, 'Amount': 0}, {'Slot': 40, 'Item': None, 'Amount': 0}, {'Slot': 41, 'Item': None, 'Amount': 0}, {'Slot': 42, 'Item': None, 'Amount': 0}, {'Slot': 43, 'Item': None, 'Amount': 0}, {'Slot': 44, 'Item': None, 'Amount': 0}, {'Slot': 45, 'Item': None, 'Amount': 0}, {'Slot': 46, 'Item': None, 'Amount': 0}, {'Slot': 47, 'Item': None, 'Amount': 0}, {'Slot': 48, 'Item': None, 'Amount': 0}, {'Slot': 49, 'Item': None, 'Amount': 0}, {'Slot': 50, 'Item': None, 'Amount': 0}, {'Slot': 51, 'Item': None, 'Amount': 0}]
+#inventory=[{'Slot':0,'Item':12,'Amount':5},{'Slot':1,'Item':20,'Amount':1},{'Slot':2,'Item':8,'Amount':1},{'Slot':3,'Item':26,'Amount':1},{'Slot':4,'Item':28,'Amount':1},{'Slot':5,'Item':39,'Amount':1},{'Slot':6,'Item':40,'Amount':4},{'Slot':7,'Item':10,'Amount':1},{'Slot':8,'Item':41,'Amount':1},{'Slot':9,'Item':42,'Amount':1},{'Slot':10,'Item':1,'Amount':64},{'Slot':11,'Item':3,'Amount':64},{'Slot':12,'Item':54,'Amount':1},{'Slot':13,'Item':None,'Amount':0},{'Slot':14,'Item':None,'Amount':0},{'Slot':15,'Item':None,'Amount':0},{'Slot':16,'Item':None,'Amount':0},{'Slot':17,'Item':None,'Amount':0},{'Slot':18,'Item':None,'Amount':0},{'Slot':19,'Item':None,'Amount':0},{'Slot':20,'Item':None,'Amount':0},{'Slot':21,'Item':None,'Amount':0},{'Slot':22,'Item':None,'Amount':0},{'Slot':23,'Item':None,'Amount':0},{'Slot':24,'Item':None,'Amount':0},{'Slot':25,'Item':None,'Amount':0},{'Slot':26,'Item':None,'Amount':0},{'Slot':27,'Item':None,'Amount':0},{'Slot':28,'Item':None,'Amount':0},{'Slot':29,'Item':None,'Amount':0},{'Slot':30,'Item':None,'Amount':0},{'Slot':31,'Item':None,'Amount':0},{'Slot':32,'Item':None,'Amount':0},{'Slot':33,'Item':None,'Amount':0},{'Slot':34,'Item':None,'Amount':0},{'Slot':35,'Item':None,'Amount':0},{'Slot':36,'Item':None,'Amount':0},{'Slot': 37, 'Item': None, 'Amount': 0}, {'Slot': 38, 'Item': None, 'Amount': 0}, {'Slot': 39, 'Item': None, 'Amount': 0}, {'Slot': 40, 'Item': None, 'Amount': 0}, {'Slot': 41, 'Item': None, 'Amount': 0}, {'Slot': 42, 'Item': None, 'Amount': 0}, {'Slot': 43, 'Item': None, 'Amount': 0}, {'Slot': 44, 'Item': None, 'Amount': 0}, {'Slot': 45, 'Item': None, 'Amount': 0}, {'Slot': 46, 'Item': None, 'Amount': 0}, {'Slot': 47, 'Item': None, 'Amount': 0}, {'Slot': 48, 'Item': None, 'Amount': 0}, {'Slot': 49, 'Item': None, 'Amount': 0}, {'Slot': 50, 'Item': None, 'Amount': 0}, {'Slot': 51, 'Item': None, 'Amount': 0}]
 #Real Inv
-#inventory=[{'Slot':0,'Item':None,'Amount':0},{'Slot':1,'Item':None,'Amount':0},{'Slot':2,'Item':None,'Amount':0},{'Slot':3,'Item':None,'Amount':0},{'Slot':4,'Item':None,'Amount':0},{'Slot':5,'Item':None,'Amount':0},{'Slot':6,'Item':None,'Amount':0},{'Slot':7,'Item':None,'Amount':0},{'Slot':8,'Item':None,'Amount':0},{'Slot':9,'Item':None,'Amount':0},{'Slot':10,'Item':None,'Amount':0},{'Slot':11,'Item':None,'Amount':0},{'Slot':12,'Item':None,'Amount':0},{'Slot':13,'Item':None,'Amount':0},{'Slot':14,'Item':None,'Amount':0},{'Slot':15,'Item':None,'Amount':0},{'Slot':16,'Item':None,'Amount':0},{'Slot':17,'Item':None,'Amount':0},{'Slot':18,'Item':None,'Amount':0},{'Slot':19,'Item':None,'Amount':0},{'Slot':20,'Item':None,'Amount':0},{'Slot':21,'Item':None,'Amount':0},{'Slot':22,'Item':None,'Amount':0},{'Slot':23,'Item':None,'Amount':0},{'Slot':24,'Item':None,'Amount':0},{'Slot':25,'Item':None,'Amount':0},{'Slot':26,'Item':None,'Amount':0},{'Slot':27,'Item':None,'Amount':0},{'Slot':28,'Item':None,'Amount':0},{'Slot':29,'Item':None,'Amount':0},{'Slot':30,'Item':None,'Amount':0},{'Slot':31,'Item':None,'Amount':0},{'Slot':32,'Item':None,'Amount':0},{'Slot':33,'Item':None,'Amount':0}]
+inventory=[{'Slot':0,'Item':None,'Amount':0},{'Slot':1,'Item':None,'Amount':0},{'Slot':2,'Item':None,'Amount':0},{'Slot':3,'Item':None,'Amount':0},{'Slot':4,'Item':None,'Amount':0},{'Slot':5,'Item':None,'Amount':0},{'Slot':6,'Item':None,'Amount':0},{'Slot':7,'Item':None,'Amount':0},{'Slot':8,'Item':None,'Amount':0},{'Slot':9,'Item':None,'Amount':0},{'Slot':10,'Item':None,'Amount':0},{'Slot':11,'Item':None,'Amount':0},{'Slot':12,'Item':None,'Amount':0},{'Slot':13,'Item':None,'Amount':0},{'Slot':14,'Item':None,'Amount':0},{'Slot':15,'Item':None,'Amount':0},{'Slot':16,'Item':None,'Amount':0},{'Slot':17,'Item':None,'Amount':0},{'Slot':18,'Item':None,'Amount':0},{'Slot':19,'Item':None,'Amount':0},{'Slot':20,'Item':None,'Amount':0},{'Slot':21,'Item':None,'Amount':0},{'Slot':22,'Item':None,'Amount':0},{'Slot':23,'Item':None,'Amount':0},{'Slot':24,'Item':None,'Amount':0},{'Slot':25,'Item':None,'Amount':0},{'Slot':26,'Item':None,'Amount':0},{'Slot':27,'Item':None,'Amount':0},{'Slot':28,'Item':None,'Amount':0},{'Slot':29,'Item':None,'Amount':0},{'Slot':30,'Item':None,'Amount':0},{'Slot':31,'Item':None,'Amount':0},{'Slot':32,'Item':None,'Amount':0},{'Slot':33,'Item':None,'Amount':0}]
+def getSlot(slots):
+    global slotHover
+    #print(slots)
+    hits=[]
+    trueHits=[]
+    #print(tempInvRects)
+    mouseRect=pygame.Rect(0,0,4,4)
+    mouseRect.center=(pygame.mouse.get_pos()[0]/SCALE[0],pygame.mouse.get_pos()[1]/SCALE[1])
+    for rect in invRects:
+        if mouseRect.colliderect(rect):
+            hits.append(invRects.index(rect))
+    #print(hits)
+    for hit in hits:
+        if hit in slots:
+            trueHits.append(hit)
+    #print(trueHits)
+    #print(trueHits)
+    if len(trueHits)==0:
+        slotHover=-1
+    elif len(trueHits)==1:
+        slotHover=trueHits[0]
+    elif len(trueHits)>1:
+        for hit in trueHits:
+            if hit<18:
+                slotHover=max(trueHits)
+                return
+        #print('Warning: multiple invRects found. Choosing highest slot number')
+        slotHover=max(trueHits)
+
+
 def registerItems(items):
     '''Register a list of items to the game. Returns a list of the Ids the items were assigned'''
     itemIds=[]
@@ -481,11 +555,16 @@ exec(compile(open(PurePath('core','Item.py')).read(),'Item.py','exec'),globals()
 exec(compile(open(PurePath('core','Tool.py')).read(),'Tool.py','exec'),globals())
 exec(compile(open(PurePath('core','Mod.py')).read(),'Mod.py','exec'),globals())
 
+
+#Register vanilla items to the game
 registerItems(items)
+
+#EXPERIMENTAL
 if mods:
     exec(compile(open(PurePath('modhelper.py')).read(),'modhelper.py','exec'),globals())
     for modFolder in os.listdir('mods'):
         for file in os.listdir(PurePath('mods',modFolder)):
+            #Execute any python scripts found in mods folder
             if file[-3:]=='.py':
                 exec(compile(open(PurePath('mods',modFolder,file)).read(),file,'exec'),globals())
 
@@ -494,18 +573,34 @@ if mods:
 exec(compile(open(PurePath('core','Recipe.py')).read(),'Recipe.py','exec'),globals())
 for recipe in recipes:
     recipeObjs.append(Recipe(recipe['Id']))
-exec(compile(open(PurePath('core','Obstacle.py')).read(),'Obstacle.py','exec'),globals())
-exec(compile(open(PurePath('core','Tile.py')).read(),'Tile.py','exec'),globals())
+#exec(compile(open(PurePath('core','Obstacle.py')).read(),'Obstacle.py','exec'),globals())
+#exec(compile(open(PurePath('core','Tile.py')).read(),'Tile.py','exec'),globals())
 #exec(compile(open('core','Block.py').read(),'core','Block.py','exec'),globals())
-exec(compile(open(PurePath('core','Structure.py')).read(),'Structure.py','exec'),globals())
+#exec(compile(open(PurePath('core','Structure.py')).read(),'Structure.py','exec'),globals())
 exec(compile(open(PurePath('core','Enemy.py' )).read(),'Enemy.py','exec'),globals())
-playerSprites={'down':pygame.image.load(PurePath('misc','player','playerDown.png')).convert_alpha(),'up':pygame.image.load(PurePath('misc','player','playerUp.png')).convert_alpha(),'left':pygame.image.load(PurePath('misc','player','playerLeft.png')).convert_alpha(),'right':pygame.image.load(PurePath('misc','player','playerRight.png')).convert_alpha(),'downHold':pygame.image.load(PurePath('misc','player','playerHold','playerHoldDown.png')).convert_alpha(),'upHold':pygame.image.load(PurePath('misc','player','playerHold','playerHoldUp.png')).convert_alpha(),'leftHold':pygame.image.load(PurePath('misc','player','playerHold','playerHoldLeft.png')).convert_alpha(),'rightHold':pygame.image.load(PurePath('misc','player','playerHold','playerHoldRight.png')).convert_alpha()}
+
+playerSpriteSheet=PyEngine.loadSpriteSheet(PurePath('misc','player.png'),32,8)
+playerSprites={'down':playerSpriteSheet[0],'up':playerSpriteSheet[1],'left':playerSpriteSheet[2],'right':playerSpriteSheet[3],'downHold':playerSpriteSheet[4],'upHold':playerSpriteSheet[5],'leftHold':playerSpriteSheet[6],'rightHold':playerSpriteSheet[7]}
+#playerSprites={'down':pygame.image.load(PurePath('misc','player','playerDown.png')).convert_alpha(),'up':pygame.image.load(PurePath('misc','player','playerUp.png')).convert_alpha(),'left':pygame.image.load(PurePath('misc','player','playerLeft.png')).convert_alpha(),'right':pygame.image.load(PurePath('misc','player','playerRight.png')).convert_alpha(),'downHold':pygame.image.load(PurePath('misc','player','playerHold','playerHoldDown.png')).convert_alpha(),'upHold':pygame.image.load(PurePath('misc','player','playerHold','playerHoldUp.png')).convert_alpha(),'leftHold':pygame.image.load(PurePath('misc','player','playerHold','playerHoldLeft.png')).convert_alpha(),'rightHold':pygame.image.load(PurePath('misc','player','playerHold','playerHoldRight.png')).convert_alpha()}
 
 player1=Player(256,256,100,100,playerSprites)
 player1.id=128
 for enemy in enemyData:
     enemyObjs.append(Enemy(enemy['Id']))
-
+def saveWorld(name):
+    meta={'name':name,'date':f'{currentTime[1]}/{currentTime[2]}','version':saveVersion}
+    try:
+        os.listdir(PurePath('saves',name))
+    except:
+        os.mkdir(PurePath('saves',name))
+    try:
+        open(PurePath('saves',name,'BIOMES'),'wb').write(pickle.dumps(levelMap))
+        open(PurePath('saves',name,'TILES'),'wb').write(pickle.dumps(tiles))
+        open(PurePath('saves',name,'STRUCTURES'),'wb').write(pickle.dumps(structures))
+        PyEngine.save(PurePath('saves',name,'meta.json'),meta)
+    except Exception as e:
+        print(f'Saving the world to {name} failed. Save file is corrupted.')
+        print(e)
 def generate():
     global screen,seed,distribution,start,structures,levelMap
     if levelMap:
@@ -600,7 +695,7 @@ def generate():
                 #print(f'Tile {i} Created')
                 if choice=='g':
                     choice2=random.choice(['cave'])
-                    structures.append(Structure(choice2,i,3,[2,3,4,5,17,18,19,20,21,34,35,36,37]))
+                    structures.append(Structure(choice2,i,3,[2,3,4,5,10,11,12,13,17,18,19,20,21,34,35,36,37]))
                 elif choice=='d':
                     choice2=random.choice(['dTemple'])
                     structures.append(Structure(choice2,i,60))
@@ -616,7 +711,7 @@ def generate():
                 #print(f'Tile {i} Created')
                 if choice=='g':
                     choice2=random.choice(['cave'])
-                    structures.append(Structure(choice2,i,3,[2,3,4,5,17,18,19,20,21,34,35,36,37]))
+                    structures.append(Structure(choice2,i,3,[2,3,4,5,10,11,12,13,17,18,19,20,21,34,35,36,37]))
                 elif choice=='d':
                     choice2=random.choice(['dTemple'])
                     structures.append(Structure(choice2,i,60))
@@ -632,7 +727,7 @@ def generate():
                 #print(f'Tile {i} Created')
                 if choice=='g':
                     choice2=random.choice(['cave'])
-                    structures.append(Structure(choice2,i,3,[2,3,4,5,17,18,19,20,21,34,35,36,37]))
+                    structures.append(Structure(choice2,i,3,[2,3,4,5,10,11,12,13,17,18,19,20,21,34,35,36,37]))
                 elif choice=='d':
                     choice2=random.choice(['dTemple'])
                     structures.append(Structure(choice2,i,60))
@@ -664,9 +759,10 @@ def generate():
         #    print(sys.getsizeof(tile.obstacles))     
         random.seed()
         print(realTime.time()-start)
-        open(PurePath('save','BIOMES'),'wb').write(pickle.dumps(levelMap))
-        open(PurePath('save','TILES'),'wb').write(pickle.dumps(tiles))
-        open(PurePath('save','STURUCTURES'),'wb').write(pickle.dumps(structures))
+        saveWorld('auto')
+        #open(PurePath('saves','BIOMES'),'wb').write(pickle.dumps(levelMap))
+        #open(PurePath('saves','TILES'),'wb').write(pickle.dumps(tiles))
+        #open(PurePath('saves','STURUCTURES'),'wb').write(pickle.dumps(structures))
         #print(pickle.load(open('WORLD','rb')))
         return levelMap
     else:
@@ -685,7 +781,14 @@ def generate():
 carryingItem=False
             
 def getItem(id:int,offset=0)-> Item:
-    return itemObjs[id+offset]
+    try:
+        return itemObjs[id+offset]
+    except IndexError:
+        print(f'ERROR: Attempted to access item with id of {id}, but no item is registered with that id.')
+        return itemObjs[0]
+    except TypeError:
+        print(f'ERROR: Attempted to access item with NONE id, returning unknown item')
+        return itemObjs[0]
 def invLoop(slots):
     #Use to handle moving items around in the inventory automatically
     #print(slots)
@@ -694,9 +797,17 @@ def invLoop(slots):
     hits=[]
     trueHits=[]
     #print(tempInvRects)
+    mouseRect=pygame.Rect(0,0,4,4)
+    mouseRect.center=(pygame.mouse.get_pos()[0]/SCALE[0],pygame.mouse.get_pos()[1]/SCALE[1])
     for rect in invRects:
-        if pygame.Rect((pygame.mouse.get_pos()[0]/SCALE[0],pygame.mouse.get_pos()[1]/SCALE[1]),(16,16)).colliderect(rect):
+        
+        
+        if mouseRect.colliderect(rect):
             hits.append(invRects.index(rect))
+    #print(hits)
+    #pygame.draw.rect(screen,'white',pygame.Rect((pygame.mouse.get_pos()[0]/SCALE[0],pygame.mouse.get_pos()[1]/SCALE[1]),(16,16)))
+    #pygame.draw.rect(screen,'white',invRects[36],2)
+    #print(hits)
     #print(hits)
     for hit in hits:
         if hit in slots:
@@ -721,18 +832,29 @@ def invLoop(slots):
         #If output clicked
         #print(slotHover,holdingItem,inventory[slotHover]['Amount'])
         if slotHover==33 and inventory[slotHover]['Item']is not None and not holdingItem and valid:
+            #print('brih')
             for nothing in inventory[24:33]:
                 if nothing['Item']is not None:
+                    #print(inventory.index(nothing))
                     removeOne(inventory.index(nothing))
+            holdingItem=True
+            #print(inventory[slotHover]['Amount'])
+            heldItem=getItem(inventory[slotHover]['Item'])
+            heldItemAmount=inventory[slotHover]['Amount']
+            removeStack(slotHover)
+            return
+        elif slotHover==33 and holdingItem:
+            pass
+        if slotHover==36 and inventory[slotHover]['Item']is not None and not holdingItem:
             holdingItem=True
             heldItem=getItem(inventory[slotHover]['Item'])
             heldItemAmount=inventory[slotHover]['Amount']
             removeStack(slotHover)
-        elif slotHover==33 and holdingItem:
+        elif slotHover==36 and holdingItem:
             pass
-        
         #If slot with a item clicked empty handed
-        elif slotHover>-1 and inventory[slotHover]['Item']is not None and not holdingItem and keys[pygame.K_LSHIFT]:
+        elif slotHover>-1 and inventory[slotHover]['Item']is not None and not holdingItem and keys[pygame.K_LSHIFT] and slotHover>24:
+            #Shift click into inventory from elsewhere
             for slot in inventory[:24]:
                 #print(slot,slotHover)
                 if slot['Slot']!=slotHover:
@@ -756,6 +878,7 @@ def invLoop(slots):
         
         #Add item count if possible
         elif slotHover>-1 and inventory[slotHover]['Item']==heldItem.itemId and holdingItem and inventory[slotHover]['Amount']+heldItemAmount<=heldItem.maxStackSize:
+            #print('its this')
             holdingItem=False
             inventory[slotHover]['Amount']+=heldItemAmount
         #Switch held item
@@ -777,6 +900,7 @@ def invLoop(slots):
             #print('bruh')
             if slotHover==35:
                 if hasattr(getItem(heldItem.itemId),'burnTime'):
+                    #print('its this')
                     holdingItem=False
                     addStack(slotHover,heldItem.itemId,heldItemAmount)
                     syncInvs('furnace')
@@ -798,6 +922,7 @@ def invLoop(slots):
                 #chestInv[slotHover-37]['Amount']=heldItemAmount
             
             else:
+                #print('its this')
                 holdingItem=False
                 addStack(slotHover,heldItem.itemId,heldItemAmount)
             #inventory[slotHover]['Item']=heldItem.itemId
@@ -853,6 +978,8 @@ def removeStack(slot:int):
 def removeOne(slot:int):
     #print(slot)
     item=inventory[slot]['Item']
+    if item is None:
+        return
     inventory[slot]['Amount']-=1
     if inventory[slot]['Amount']==0:
         inventory[slot]['Item']=None
@@ -867,21 +994,27 @@ def addStack(slot,item,amount):
         inventory[slot]['Item']=item
     if inventory[slot]['Item']==item:
         inventory[slot]['Amount']+=amount
-def syncInvs(inv):
+def syncInvs(inv,slots=None):
     #Furnace Sync
+    print(inv,'smeltInv' in globals())
     global smeltInv,chestInv
     if 'smeltInv' in globals() and inv=='furnace':
         for slot in inventory[34:37]:
             smeltInv[slot['Slot']-34]['Item']=slot['Item']
             smeltInv[slot['Slot']-34]['Amount']=slot['Amount']
     #Chest Sync 
-    if 'chestInv' in globals() and inv=='chest':
+    elif 'chestInv' in globals() and inv=='chest':
         for slot in inventory[37:52]:
             chestInv[slot['Slot']-37]['Item']=slot['Item']
             chestInv[slot['Slot']-37]['Amount']=slot['Amount']
-    #Sync modded inventories
+    #Sync "modded" inventories
+    else:
+        for slot in inventory[slots[0]:slots[1]]:
+            inv[slot['Slot']-slots[0]]['Item']=slot['Item']
+            inv[slot['Slot']-slots[0]]['Amount']=slot['Amount']
+        return inv
 def find(id,slots):
-    #Find first instance of given item if it is in given slots
+    'Find first instance of given item if it is in given slots'
     for slot in inventory:
         #print(slot['Item'])
         if slot['Item']==id and slot['Slot'] in slots:
@@ -908,7 +1041,7 @@ def loadLevel(level):
         x+=1
 level=generate()
 tBox=PyEngine.TextBox('Unknown',0,0,32,64,'Coure.fon',25,False,False,'black','grey','black',3,(5,10))
-fps=PyEngine.TextBox(f'FPS: {frames}',430,480,30,80,'Coure.fon',25,True,False,'black',(251, 182, 104),(155, 82, 0),2,(5,5))
+fps=PyEngine.TextBox(f'FPS: {frames}',430,480,30,80,'Coure.fon',25,True,False,'black',(251, 182, 104),(155, 82, 0),2,(5,5))       
 
 def blitInv():
     global craftingGrid,inventory,valid,slothover
@@ -918,24 +1051,30 @@ def blitInv():
     screen.blit(invScreen,(0,0))
     pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
     if debugInv:
-        xx=8
-        yy=48
-        for i in range(18):
-            invPositions.append((xx,yy))
-            xx+=44
-            if ii>4:
-                yy+=52
-                xx=8
-                ii=0
-                continue
-            ii+=1
-        invDict.update(positions=invPositions)
+        for slot in invList:
+            pygame.draw.rect(screen,'white',pygame.Rect(slot,(32,32)))
+        #ii=0
+        #xx=8
+        #yy=48
+        #for i in range(18):
+        #    invPositions.append((xx,yy))
+        #    xx+=44
+        #    if ii>4:
+        #        yy+=52
+        #        xx=8
+        #        ii=0
+        #        continue
+        #    ii+=1
+        #invDict.update(positions=invPositions)
         #print(invDict)
         #PyEngine.save('InvDebug.json',invDict)
     else:
         for item in inventory:
             if item['Item'] is not None:
-                screen.blit(getItem(item['Item']).sprite,invList[item['Slot']])
+                try:
+                    screen.blit(getItem(item['Item']).sprite,invList[item['Slot']])
+                except AttributeError:
+                    screen.blit(unknown,invList[item['Slot']])
                 if item['Amount']>1:
                     screen.blit(font.render(str(item['Amount']),True,'white'),(invList[item['Slot']][0]-4,invList[item['Slot']][1]+24))
                 elif item['Amount']<=0:
@@ -960,7 +1099,10 @@ def blitInv():
         #print(slotHover)
         if slotHover>-1 and inventory[slotHover]['Item']is not None and not holdingItem:
             tBox.snapToMouse(512,0,SCALE)
-            tBox.update(getItem(inventory[slotHover]['Item']).name,getItem(inventory[slotHover]['Item']).tooltip)
+            try:
+                tBox.update(getItem(inventory[slotHover]['Item']).name,getItem(inventory[slotHover]['Item']).tooltip)
+            except AttributeError:
+                tBox.update('Unregistered Item',f'Attempted to access item with id of {inventory[slotHover]["Item"]}, but no item is registered with that id.')
             tBox.render(screen,True)
 def blitItems():
     pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
@@ -1094,19 +1236,27 @@ while __name__=='__main__':
         slots.extend([34,35,36])
     elif chestOpen:
         slots=list(range(24))
-        slots.extend([37,38,39,40,41,42,43,44,45,46,47,48.49,50,51])
-    else:
+        slots.extend([37,38,39,40,41,42,43,44,45,46,47,48,49,50,51])
+    elif not uiQueue:
         slots=[]
+    
     currentItem=inventory[selectorPos+17]
     currentIndex=selectorPos+17
     keys=pygame.key.get_pressed()
     PyEngine.showAll(screen)
     PyEngine.listenAll(screen)
+    oldPlayerPos=(player1.x,player1.y)
     player1.listenInputs()
+    #print((player1.x,player1.y),oldPlayerPos)
+    if (player1.x,player1.y)==oldPlayerPos:
+        playerMoved=False
+    else: playerMoved=True
     for enemy in activeEnemies:
         enemy.update() 
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
+            if autosave:
+                saveWorld('auto')
             exit()
         #if chatOpen and event.type==pygame.TEXTINPUT:
         #    #if event.dict.get('text') in '0123456789qwertyuiopasdfghjklzxcvbnm':
@@ -1115,7 +1265,7 @@ while __name__=='__main__':
         #    print(cLine)
         #    cText=''.join(cLine)
         if event.type==pygame.MOUSEMOTION:
-            mm=True
+            mouseMotion=True
         if event.type==pygame.KEYDOWN:
             keys=pygame.key.get_pressed()
             if keys[pygame.K_F5] and mapMode:
@@ -1124,34 +1274,43 @@ while __name__=='__main__':
                 for tile in tiles:
                     if tile.id==player1.id:
                         tile.createObstacles()
+                send('Reloaded tile.')
             if keys[pygame.K_F4]:
                 if not drawHitboxes:
                     drawHitboxes=True
+                    send('Hitboxes enabled.')
                 elif drawHitboxes:
                     drawHitboxes=False
+                    send('Hitboxes disabled.')
             if keys[pygame.K_F3]:
+                for ob in obstacles:
+
+                    print(ob.type)
                 #Reload Classes
-                exec(compile(open(PurePath('core','Player.py')).read(),'Player.py','exec'),globals())
-                x,y=player1.x,player1.y
-                player1=Player(x,y)
-                player1.id=currentTile.id
-                exec(compile(open(PurePath('core','Item.py')).read(),'Item.py','exec'),globals())
-                itemObjs.clear()
-                for item in items:
-                    itemObjs.append(Item(item['Id']))
-                exec(compile(open(PurePath('core','Recipe.py')).read(),'Recipe.py','exec'),globals())
-                recipeObjs.clear()
-                for recipe in recipes:
-                    recipeObjs.append(Recipe(recipe['Id']))
-                exec(compile(open(PurePath('core','Obstacle.py')).read(),'Obstacle.py','exec'),globals())
-                currentTile.createObstacles()
-                exec(compile(open(PurePath('core','Tile.py')).read(),'Tile.py','exec'),globals())
-                #exec(compile(open('core','Block.py').read(),'core','Block.py','exec'),globals())
-                exec(compile(open(PurePath('core','Structure.py')).read(),'Structure.py','exec'),globals())
+                #exec(compile(open(PurePath('core','Player.py')).read(),'Player.py','exec'),globals())
+                #x,y=player1.x,player1.y
+                #player1=Player(x,y)
+                #player1.id=currentTile.id
+                #exec(compile(open(PurePath('core','Item.py')).read(),'Item.py','exec'),globals())
+                #itemObjs.clear()
+                #for item in items:
+                #    itemObjs.append(Item(item['Id']))
+                #exec(compile(open(PurePath('core','Recipe.py')).read(),'Recipe.py','exec'),globals())
+                #recipeObjs.clear()
+                #for recipe in recipes:
+                #    recipeObjs.append(Recipe(recipe['Id']))
+                #exec(compile(open(PurePath('core','Obstacle.py')).read(),'Obstacle.py','exec'),globals())
+                #currentTile.createObstacles()
+                #exec(compile(open(PurePath('core','Tile.py')).read(),'Tile.py','exec'),globals())
+                ##exec(compile(open('core','Block.py').read(),'core','Block.py','exec'),globals())
+                #exec(compile(open(PurePath('core','Structure.py')).read(),'Structure.py','exec'),globals())
                 #for block in blocks:
                 #    blockObjs.append(Block(block['Id']))
+                pass
             if keys[pygame.K_F2]:
                 print(inventory)
+            if keys[pygame.K_F1]:
+                print(holdingItem,heldItem,heldItemAmount)
             if keys[pygame.K_SLASH] and not chatOpen:
                 chatOpen=True
                 cLine=[]
@@ -1176,6 +1335,7 @@ while __name__=='__main__':
                 
                 
             if keys[pygame.key.key_code(controls['inv'])] and not chatOpen:
+                
                 if smeltOpen:
                     smeltOpen=False
                     syncInvs('furnace') 
@@ -1190,9 +1350,14 @@ while __name__=='__main__':
                         slot['Amount']=0  
                 elif invOpen:
                     invOpen=False
-                      
-                elif not invOpen:
+                elif not invOpen and not uiQueue:
                     invOpen=True
+                print(closeQueue)
+                for command in closeQueue:
+                    command()
+                
+                #uiQueue.clear()
+                #eventQueue.clear()
         if chatOpen and event.type==pygame.TEXTINPUT:
             #if event.dict.get('text') in '0123456789qwertyuiopasdfghjklzxcvbnm':
             #print('input')
@@ -1204,17 +1369,18 @@ while __name__=='__main__':
             cText=''.join(cLine)
         currentItem=inventory[selectorPos+17]
         currentIndex=selectorPos+17
-        if event.type==pygame.MOUSEBUTTONDOWN and not invOpen and not smeltOpen and not chestOpen:
+        if event.type==pygame.MOUSEBUTTONDOWN and not invOpen and not smeltOpen and not chestOpen and not uiQueue:
             currentItem=inventory[selectorPos+17]
             currentIndex=selectorPos+17
-            mouseRect=pygame.Rect((pygame.mouse.get_pos()[0]/SCALE[0],pygame.mouse.get_pos()[1]/SCALE[1]),(8,8))
+            mouseRect=pygame.Rect((pygame.mouse.get_pos()[0]/SCALE[0],pygame.mouse.get_pos()[1]/SCALE[1]),(2,2))
             if currentItem['Item'] is None and event.dict['button']==1:
-                for pool in projectilePools:
-                    if pool==currentProjectile:
-                        for projectile in  projectilePools[pool]:
-                            if not projectile.active:
-                                projectile.spawn((player1.x+16,player1.y+16))
-                                break
+                #for pool in projectilePools:
+                #    if pool==currentProjectile:
+                #        for projectile in  projectilePools[pool]:
+                #            if not projectile.active:
+                #                projectile.spawn((player1.x+16,player1.y+16))
+                #                break
+                pass
 
             if currentItem['Item'] is not None and event.dict['button']==1:
                 if getItem(currentItem['Item']).type=='Block':
@@ -1224,15 +1390,25 @@ while __name__=='__main__':
                             #print(block['ParentId'],currentItem['Item'])
                             #print('place')
                             currentBlock=block
+                            mouseRect.center=(pygame.mouse.get_pos()[0]/SCALE[0],pygame.mouse.get_pos()[1]/SCALE[1])
                             for i in range(len(obstacles)):
                                 obData=obstacles[i].checkCollisionDamage(mouseRect,False,False,False)
                                 #print(obData)
                                 if obData!=False:
+                                    if getItem(currentItem['Item']).canBePlaced is not None:
+                                        if obstacles[i].id not in getItem(currentItem['Item']).canBePlaced:
+                                            continue
                                     if obData[0]:
                                         #print('ur dad')
                                         oldob=currentTile.obstacles.pop(i)
-                                        currentTile.obstacles.insert(i,Obstacle(currentBlock['Id'],oldob.rect,i))
-                                        currentTile.obstacles.insert(i,Obstacle(currentBlock['Id'],oldob.rect,i))
+                                        #oldob=currentTile.obstacles.pop(i)
+                                        if currentBlock['Id']==22: #IDFK Its special
+                                            currentTile.obstacles.insert(i,Obstacle(currentBlock['Id'],oldob.rect,i))
+                                        else:
+                                            currentTile.obstacles.insert(i,Obstacle(currentBlock['Id'],oldob.rect,i))
+                                            currentTile.obstacles.insert(i,Obstacle(currentBlock['Id'],oldob.rect,i))
+
+                                        #currentTile.obstacles.pop(i)
                                         #currentTile.obstacles=obstacles.copy()
                                         #for ob in currentTile.obstacles:
                                         #
@@ -1251,11 +1427,16 @@ while __name__=='__main__':
                     if obData!=False:
                         if obData[0]:
                             obstacle.interact()
+                            #break
                 if currentItem['Item']is not None:
                     if getItem(currentItem['Item']).type=='Tool':
                         getItem(currentItem['Item']).rclick()                   
-            if pygame.mouse.get_pos()[0]/SCALE[0]>player1.x and event.dict['button']==1 and currentItem['Item']==8 and slashDone:
-                slashDone=False 
+            if pygame.mouse.get_pos()[0]/SCALE[0]>player1.x and event.dict['button']==1 and currentItem['Item']==8:
+                slashAnimation.start(player1.x+20,player1.y)
+                slashRect=pygame.rect.Rect(player1.x+20,player1.y,32,32)
+                for ob in obstacles:
+                    droppedItems.append(ob.checkCollisionDamage(slashRect,True,True,True))
+                    droppedItems.append(droppedItems[-1])
             elif event.dict['button']==1 and currentItem['Item']==None: 
                 for ob in obstacles:
                     if ob.harvestLevel!=-1:
@@ -1263,8 +1444,12 @@ while __name__=='__main__':
                             droppedItems.append(ob.checkCollisionDamage(mouseRect,True,True,True))
             elif event.dict['button']==1 and currentItem['Item']==14:
                 random.choice(horns).play()   
-            elif pygame.mouse.get_pos()[0]/SCALE[0]<=player1.x and event.dict['button']==1 and currentItem['Item']==8 and slashLDone:
-                slashLDone=False
+            elif pygame.mouse.get_pos()[0]/SCALE[0]<=player1.x and event.dict['button']==1 and currentItem['Item']==8:
+                slashLAnimation.start(player1.x-23,player1.y)
+                slashRect=pygame.rect.Rect(player1.x-23,player1.y,32,32)
+                for ob in obstacles:
+                    droppedItems.append(ob.checkCollisionDamage(slashRect,True,True,True))
+                    droppedItems.append(droppedItems[-1])
             elif  event.dict['button']==4:
                 if selectorPos>1:
                     selectorPos-=1
@@ -1276,6 +1461,7 @@ while __name__=='__main__':
                 else:
                     selectorPos=1
         elif event.type==pygame.MOUSEBUTTONDOWN:
+            
             if invOpen:
                 slots=list(range(34))
                 invLoop(slots)
@@ -1285,10 +1471,15 @@ while __name__=='__main__':
                 invLoop(slots)  
             elif chestOpen:
                 slots=list(range(24))
-                slots.extend([37,38,39,40,41,42,43,44,45,46,47,48.49,50,51])
+                slots.extend([37,38,39,40,41,42,43,44,45,46,47,48,49,50,51])
                 invLoop(slots) #Something different
+            #print(event)
+            for command in eventQueue:
+                #print(eventQueue)
+                command(event)      
+    
     #print(inventory)
-    mouseRect=pygame.Rect((pygame.mouse.get_pos()[0]/SCALE[0]-16,pygame.mouse.get_pos()[1]/SCALE[1]-16),(8,8))
+    mouseRect=pygame.Rect((pygame.mouse.get_pos()[0]/SCALE[0],pygame.mouse.get_pos()[1]/SCALE[1]),(2,2))
     if currentItem['Item'] is not None:
         carryingItem=True
         heldItemm=getItem(currentItem['Item'])
@@ -1296,12 +1487,25 @@ while __name__=='__main__':
             for block in obstacleData:
                 if block['ParentId']==currentItem['Item']:
                     currentBlock=block
+                    mouseRect.center=(pygame.mouse.get_pos()[0]/SCALE[0],pygame.mouse.get_pos()[1]/SCALE[1])
                     for i in range(len(obstacles)):
                         if obstacles[i].checkCollisionDamage(mouseRect,False,False,False):
-                            hover=pygame.image.load(PurePath(*currentBlock['Sprite']))
-                            hover.set_alpha(130)
-                            screen.blit(hover,(customRound(mouseRect.left,64),customRound(mouseRect.top,64)))
-                            break  
+                            #print(getItem(currentItem['Item']).canBePlaced)
+                            if getItem(currentItem['Item']).canBePlaced is not None:
+                                #print('its not none')
+                                if obstacles[i].id not in getItem(currentItem['Item']).canBePlaced:
+                                    pass
+                                else:
+                                    hover=pygame.image.load(PurePath(*currentBlock['Sprite']))
+                                    hover.set_alpha(130)
+                                    screen.blit(hover,(customRound(mouseRect.centerx-32,64),customRound(mouseRect.centery-32,64)))
+                                    pygame.draw.rect(screen,'blue',mouseRect)
+                                    break  
+                            else:
+                                hover=pygame.image.load(PurePath(*currentBlock['Sprite']))
+                                hover.set_alpha(130)
+                                screen.blit(hover,(customRound(mouseRect.centerx-32,64),customRound(mouseRect.centery-32,64)))
+                                break   
         if getItem(currentItem['Item']).holdScript is not None:
             exec(getItem(currentItem['Item']).holdScript,globals())          
     else:
@@ -1340,19 +1544,15 @@ while __name__=='__main__':
             #    valid=False
                     
     #print(slashDone)
-    if not slashDone:
-        slashFrame,slashStartTime,slashDone=PyEngine.animation(slash,slashSpeed,screen,player1.x+20,player1.y,slashStartTime,slashFrame)
-        slashRect=pygame.rect.Rect(player1.x+20,player1.y,32,32)
-        for ob in obstacles:
-            droppedItems.append(ob.checkCollisionDamage(slashRect,True,True,True))
-            droppedItems.append(droppedItems[-1])
 
-    elif not slashLDone:
-        slashLFrame,slashLStartTime,slashLDone=PyEngine.animation(slashL,slashSpeed,screen,player1.x-23,player1.y,slashLStartTime,slashLFrame)
-        slashRect=pygame.rect.Rect(player1.x-23,player1.y,32,32)
-        for ob in obstacles:
-            droppedItems.append(ob.checkCollisionDamage(slashRect,True,True,True))
-            droppedItems.append(droppedItems[-1])
+        
+        #slashFrame,slashStartTime,slashDone=PyEngine.animation(slash,slashSpeed,screen,player1.x+20,player1.y,slashStartTime,slashFrame)
+        
+
+   
+        
+        #slashLFrame,slashLStartTime,slashLDone=PyEngine.animation(slashL,slashSpeed,screen,player1.x-23,player1.y,slashLStartTime,slashLFrame)
+        
     if fuel>0:
         fuel-=1
         if fuel/maxFuel==0:
@@ -1375,13 +1575,15 @@ while __name__=='__main__':
             fueled=True            
         smeltStuff=[lambda:screen.blit(invOverlay,(0,0)),lambda:screen.blit(invOverlay2,(0,32)),lambda:screen.blit(currentSmelt,(0,0)),lambda:blitItems()]          
 
-    for obstacle in obstacles:
-        if not obstacle.done:
-            obstacle.frame,obstacle.startTime,obstacle.done=PyEngine.animation([pygame.image.load(i) for i in obstacle.animation],100,screen,obstacle.rect.left,obstacle.rect.top,obstacle.startTime,obstacle.frame)
-            if obstacle.done and obstacle.killMe:
-                obstacles.pop(obstacle.posid)
-                obstacles.insert(obstacle.posid,Obstacle('none',obstacle.colisRect,obstacle.posid)) 
-    
+    #for obstacle in obstacles:
+    #    if not obstacle.done:
+    #        #obstacle.frame,obstacle.startTime,obstacle.done=PyEngine.animation(PyEngine.loadSpriteSheet(PurePath(*obstacle.animation),64,5),100,screen,obstacle.rect.left,obstacle.rect.top,obstacle.startTime,obstacle.frame)
+    #        
+    #        #if obstacle.done and obstacle.killMe:
+    #        #    obstacles.pop(obstacle.posid)
+    #        #    obstacles.insert(obstacle.posid,Obstacle('none',obstacle.colisRect,obstacle.posid)) 
+    #        pass
+    PyEngine.updateAnimations(screen)
     screen.blit(night,(0,0)) 
     hpBar=pygame.Surface((player1.hp if player1.hp>=0 else 0,16))
     hungerBar=pygame.Surface((player1.hunger if player1.hunger>=0 else 0,16))
@@ -1400,32 +1602,35 @@ while __name__=='__main__':
     screen.blit(hpUnder,(398,48))
     screen.blit(hungerBar,(400,50))
     frames+=1
+    #print(uiQueue)
+    for command in uiQueue:
+        command()
     if invOpen:
         blitInv()
     elif smeltOpen:
         for command in smeltStuff:
             command()
-        if inventory[31]['Item'] is not None and fuel==0:
-            fuel+=getItem(inventory[31]['Item']).burnTime
-            maxFuel=getItem(inventory[31]['Item']).burnTime
-            removeOne(31)
-            
-        if inventory[25]['Item'] is not None and fueled:
+        if smeltInv[1]['Item'] is not None and fuel==0:
+            fuel+=getItem(smeltInv[1]['Item']).burnTime
+            maxFuel=getItem(smeltInv[1]['Item']).burnTime
+            removeOne(35)    
+        if inventory[34]['Item'] is not None and fueled:
             for recipe in smeltRecipes:
-                if recipe.checkRecipe([inventory[25]['Item']]) and not smelting:
+                if recipe.checkRecipe([inventory[34]['Item']]) and not smelting:
                     threading.Thread(target=smelt).start()
                     smelting=True
                     currentRecipe=recipe
             if smeltDone:  
+                print('grgrg')
                 smeltDone=False      
-                inventory[33]['Item']=currentRecipe.output
-                inventory[33]['Amount']+=currentRecipe.count
+                inventory[36]['Item']=currentRecipe.output
+                inventory[36]['Amount']+=currentRecipe.count
                 valid=True
-                removeOne(25)
+                removeOne(34)
     elif chestOpen:
         for command in chestStuff:
             command()
-    else:
+    elif not uiQueue:
         #Hot bar
         currentItem=inventory[selectorPos+17]
         screen.blit(hbOverlay,(0,0))
@@ -1442,8 +1647,8 @@ while __name__=='__main__':
             itemText=font.render(getItem(currentItem['Item']).name,True,'black')
             screen.blit(itemText,(5,60))
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
-        elif not cursorChange:
-            pygame.mouse.set_cursor(pygame.cursors.Cursor((8,8),pygame.image.load(PurePath('misc','hand.png'))))
+        elif not cursorChange and not scriptQueue:
+            pygame.mouse.set_cursor(pygame.cursors.Cursor((16,16),pygame.image.load(PurePath('misc','hand.png'))))
         if drawHitboxes:
             screen.blit(hbvis,player1.playerRect)
             for obstacle in obstacles:
@@ -1460,8 +1665,12 @@ while __name__=='__main__':
                     print(e)
             for enemy in enemies:
                 screen.blit(hbvisSolid,enemy.rect)
+            
+            pygame.draw.rect(screen,'green',mouseRect,border_radius=1)
     
     player1.doHunger()
+    
+    
     if chatOpen:
         #print(cText)
         #Typing Line
@@ -1481,12 +1690,27 @@ while __name__=='__main__':
         frames=0
         advanceTime(1)
         startTime=pygame.time.get_ticks()
+    if pygame.time.get_ticks()-footstepStartTime>=footstepDelay:
+
+        
+        if currentTile.sounds is not None and playerMoved and not mute:
+            footstepStartTime=pygame.time.get_ticks()
+            pygame.mixer.Sound(pydub.effects.speedup(pydub.audio_segment.AudioSegment.from_wav(PurePath('sfx','tiles',currentTile.biome,'footstep',random.choice(currentTile.sounds['footsteps']))),random.choice(range(100,120))/100).export(format='wav')).play()
+            
     spawnDelay-=1
     for projectilee in PyEngine.getProjectiles():
         hit=projectilee.update(screen,[enemy.rect for enemy in activeEnemies])
         #print(hit)
         if hit!=-1 and hit is not None:
             activeEnemies[hit].damage(projectilePools[currentProjectile][0].damage)
+    #try:
+
+    cursorChange=True
+    for command in scriptQueue:
+        command()
+    #except Exception as e:
+    #    print(f'An error occured running something in the script queue. The error was: {e}')
+    #scriptQueue.clear()
 
     ver.render(screen)
     fps.render(screen)  
@@ -1499,16 +1723,28 @@ while __name__=='__main__':
     #for stat in top_stats[:10]:
     #    print(stat)
 
-      
+    #screen.blit(testSprites[0],(0,0))
+    #screen.blit(testSprites[1],(20,0))
+    #screen.blit(testSprites[2],(40,0))
+    #screen.blit(testSprites[3],(60,0))
+    
     #print(len(PyEngine.getProjectiles()))
-    idk=pygame.image.load(PurePath('boss','boss1','boss1.png'))
+    #idk=pygame.image.load(PurePath('boss','boss1','boss1.png'))
     #idk.fill('black')
     #screen.blit(idk,(player.x,player.y))
+    #pygame.draw.rect(screen,'red',pygame.Rect((pygame.mouse.get_pos()[0]/SCALE[0],pygame.mouse.get_pos()[1]/SCALE[1]),(4,4)))
+    #pygame.draw.line(screen,'green',mouseRect.topleft,mouseRect.topleft)
+    size=pygame.display.get_window_size()
+    SCALE=(size[0]/512,size[1]/512)
+    PyEngine.scale=SCALE
     mainScreen.fill('black')
     if SCALE !=(1,1):  
         mainScreen.blit(pygame.transform.scale(screen,(512*SCALE[0],512*SCALE[1])),(0,0))
     else:
         mainScreen.blit(screen,(0,0))
+    #print('bruh')
+    #print(inStruct)
+    #print(PyEngine.liveProjectiles)
     pygame.display.update() 
     #gc.collect()   
     clock.tick(120)

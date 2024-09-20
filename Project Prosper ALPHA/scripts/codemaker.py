@@ -1,4 +1,5 @@
-h=[]
-for i in range(15):
-    h.append({'Slot':i+37,'Item':None,'Amount':0})
-print(h)
+import pyautogui,time
+time.sleep(10)
+for i in range(1000):
+    pyautogui.press('right',9,0.1)
+    pyautogui.press('enter',1,.01)

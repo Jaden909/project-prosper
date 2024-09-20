@@ -4,6 +4,8 @@ if not invOpen and not smeltOpen and not chestOpen:
 else:
     cursorChange=False 
 mx,my=pygame.mouse.get_pos()
+mx/=SCALE[0]
+my/=SCALE[1]
 correctionAngle=225
 dx, dy = mx - player1.playerRect.centerx, player1.playerRect.centery - my
 angle = math.degrees(math.atan2(-dy, dx)) - correctionAngle

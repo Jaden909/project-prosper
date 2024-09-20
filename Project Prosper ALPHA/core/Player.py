@@ -95,7 +95,7 @@ class Player:
                         self.doHunger()
                 if carryingItem:
                     if heldItemm.type=='Tool':
-                        self.itemSprite=pygame.transform.scale(pygame.image.load(PurePath('items\\'+heldItemm.spriteLocation)),(16,16))
+                        self.itemSprite=pygame.transform.scale(pygame.image.load(PurePath('items',heldItemm.spriteLocation)),(16,16))
                         self.itemSpriteFlipped=pygame.transform.flip(self.itemSprite,True,False)
                     else:
                         self.itemSprite=pygame.transform.scale(heldItemm.sprite,(16,16))

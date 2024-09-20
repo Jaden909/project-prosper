@@ -6,8 +6,8 @@ class Tool(Item):
         self.name=self.data['Name']
         self.maxStackSize=1
         self.spriteLocation=self.data['Sprite']
-        self.sprite=pygame.image.load(PurePath('items\\'+self.spriteLocation))
-        self.baseSprite=pygame.image.load(PurePath('items\\'+self.spriteLocation))
+        self.sprite=pygame.image.load(PurePath('items',self.spriteLocation))
+        self.baseSprite=pygame.image.load(PurePath('items',self.spriteLocation))
         self.type=self.data['Type']
         try:
 
@@ -24,13 +24,13 @@ class Tool(Item):
                 if self.tags['lscript']is None:
                     self.lscript=None
                 else:
-                    self.lscript=compile(open(PurePath(f"scripts",f"{self.tags['lscript']}")).read(),f"scripts\\{self.tags['lscript']}",'exec')
+                    self.lscript=compile(open(PurePath(f"scripts",f"{self.tags['lscript']}")).read(),PurePath(f"scripts",f"{self.tags['lscript']}"),'exec')
             #Called on right click
             if 'rscript'in self.tags:
                 if self.tags['rscript']is None:
                     self.rscript=None
                 else:
-                    self.rscript=compile(open(PurePath(f"scripts",f"{self.tags['rscript']}")).read(),f"scripts\\{self.tags['rscript']}",'exec')
+                    self.rscript=compile(open(PurePath(f"scripts",f"{self.tags['rscript']}")).read(),PurePath(f"scripts",f"{self.tags['rscript']}"),'exec')
             if 'damage'in self.tags:
                 self.damage=int(self.tags['damage'])
             if 'SwingSpeed'in self.tags:
@@ -46,7 +46,7 @@ class Tool(Item):
             else:
                 self.hideWhenHolding=False
             if 'holdScript' in self.tags:
-                self.holdScript=compile(open(PurePath("scripts",f"{self.tags['holdScript']}")).read(),f"scripts\\{self.tags['holdScript']}",'exec')
+                self.holdScript=compile(open(PurePath("scripts",f"{self.tags['holdScript']}")).read(),PurePath(f"scripts",f"{self.tags['holdScript']}"),'exec')
             else:
                 self.holdScript=None
         except Exception as e:
@@ -63,7 +63,12 @@ class Tool(Item):
         try:
             self.tooltip=self.data['Tooltip']
         except:
-            self.tooltip=''    
+            self.tooltip=''
+        if advancedTooltips:
+            if self.tooltip=='':
+                self.tooltip+=f'Id: {self.itemId}'
+            else:
+                self.tooltip+=f' Id: {self.itemId}'  
     #Tool Stuff
     def lclick(self):
         try:
@@ -72,16 +77,16 @@ class Tool(Item):
                 global currentTool
                 currentTool=self
                 exec(self.lscript,globals())
-        except:
-            pass
+        except Exception as e:
+            print(e)
     def rclick(self):
         try:
             if self.rscript!=None:
                 global currentTool
                 currentTool=self
                 exec(self.rscript,globals())
-        except:
-            pass
+        except Exception as e:
+            print(e)
     def reloadSprite(self):
         if self.durability!=self.maxDurability:
 

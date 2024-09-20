@@ -4,7 +4,7 @@ if 'smeltRecipes' not in globals():
 def smelt():
     global smeltDone,smelting
     realTime.sleep(5)
-    #print('done')
+    print('done')
     smeltDone=True
     smelting=False
 smeltInv=cOb.obData['Inventory']
@@ -22,13 +22,13 @@ addStack(36,smeltInv[2]['Item'],smeltInv[2]['Amount'])
 
 
 
-smeltDict=PyEngine.load('data\\smeltDebug.json')
+smeltDict=PyEngine.load(PurePath('data','smeltDebug.json'))
 smeltList=smeltDict['Positions']
-smelt0=pygame.image.load('objects\\stove\\smeltScreen\\smelt0.png')
-smelt1=pygame.image.load('objects\\stove\\smeltScreen\\smelt1.png')
-smelt2=pygame.image.load('objects\\stove\\smeltScreen\\smelt2.png')
-smelt3=pygame.image.load('objects\\stove\\smeltScreen\\smelt3.png')
-smelt4=pygame.image.load('objects\\stove\\smeltScreen\\smelt4.png')
-smelt5=pygame.image.load('objects\\stove\\smeltScreen\\smelt5.png')
+smelt0=pygame.image.load(PurePath('objects','stove','smeltScreen','smelt0.png'))
+smelt1=pygame.image.load(PurePath('objects','stove','smeltScreen','smelt1.png'))
+smelt2=pygame.image.load(PurePath('objects','stove','smeltScreen','smelt2.png'))
+smelt3=pygame.image.load(PurePath('objects','stove','smeltScreen','smelt3.png'))
+smelt4=pygame.image.load(PurePath('objects','stove','smeltScreen','smelt4.png'))
+smelt5=pygame.image.load(PurePath('objects','stove','smeltScreen','smelt5.png'))
 currentSmelt=smelt5
 smeltStuff=[lambda:screen.blit(invOverlay,(0,0)),lambda:screen.blit(invOverlay2,(0,32)),lambda:screen.blit(smeltOverlay,(343,51)),lambda:screen.blit(currentSmelt,(0,0)),lambda:blitItems()]
