@@ -79,7 +79,7 @@ class Tile:
             x=0
             y=0
             for i in range(64):
-                type=random.choice(['none',1,3])
+                type=random.choice(['none',1,3,24 if events['halloween'] else 'none'])
                 if type==1:
                     self.obstacles.append(Obstacle(type,pygame.rect.Rect((x*64-20,y*64),(64,64)),i))
                 else:
@@ -94,7 +94,7 @@ class Tile:
         elif self.biome=='o':
             x=0
             y=0
-            if not xmas:
+            if not events['xmas']:
                 possibilities=['none']
             else:
                 possibilities=['none','none','none','none','none','none',12,13,14,15,13,13]

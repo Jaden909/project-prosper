@@ -12,6 +12,8 @@ class Recipe:
         self.items=[]
         self.craftItems=[]
     def checkRecipe(self,craftingInv:list):
+        self.items=[]
+        self.craftItems=[]
         if self.requires is not None:
             if researches[self.requires]:
                 self.items.clear()
@@ -47,6 +49,8 @@ class Recipe:
                         self.craftItems.append(item)
                 self.items.sort()
                 self.craftItems.sort()
+                #print(self.items)
+                #print(self.craftItems)
                 if self.items==self.craftItems:
                     return True
                 return False

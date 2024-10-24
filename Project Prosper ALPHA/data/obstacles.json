@@ -21,4 +21,5 @@
 {"Type":"badPC","Id":20,"DropsItem":null,"IsEntrance":false,"Script":"badPc.py","Sprite":["objects","badPC","badPC.png"],"Animation":null,"HarvestLevel":0,"ParentId":41,"BlockMovement":false,"Data":[]},
 {"Type":"oil","Id":21,"DropsItem":null,"IsEntrance":false,"Script":null,"Sprite":["objects","oil.png"],"Animation":null,"HarvestLevel":-1,"ParentId":null,"BlockMovement":false,"Data":[{"canBePlaced":[42]}]},
 {"Type":"oilWell","Id":22,"DropsItem":null,"IsEntrance":false,"Script":"oilWell.py","Sprite":["objects","oilWell.png"],"Animation":null,"HarvestLevel":-1,"ParentId":42,"BlockMovement":false,"Data":{"Inventory":[{"Slot":0,"Item":null,"Amount":0}]}},
-{"Type":"copper","Id":23,"DropsItem":53,"IsEntrance":false,"Script":null,"Sprite":["objects","copperOre","copperOre.png"],"Animation":["objects","copperOre.png"],"HarvestLevel":0,"ParentId":null,"BlockMovement":true,"Data":{}}]
+{"Type":"copper","Id":23,"DropsItem":53,"IsEntrance":false,"Script":null,"Sprite":["objects","copperOre","copperOre.png"],"Animation":["objects","copperOre.png"],"HarvestLevel":0,"ParentId":null,"BlockMovement":true,"Data":{}},
+{"Type":"pumpkin","Id":24,"DropsItem":57,"IsEntrance":false,"Script":null,"Sprite":["objects","pumpkin","pumpkin.png"],"Animation":["objects","pumpkin.png"],"HarvestLevel":0,"ParentId":null,"BlockMovement":false,"Data":{}}]

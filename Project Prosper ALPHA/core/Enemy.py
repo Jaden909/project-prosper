@@ -20,6 +20,7 @@ class Enemy:
         self.tileId=player1.id
         self.extraData=self.data['Extra Data']
         self.drops=self.data['Drops']
+        self.event=self.data['Event']
         
     def update(self):
         global currentEnemy
@@ -51,5 +52,5 @@ class Enemy:
         if self.hp<=0:
              self.die()
     def spawn(self):
-
+        if events[self.event]:
             activeEnemies.append(Enemy(self.id))

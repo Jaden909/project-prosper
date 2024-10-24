@@ -322,6 +322,10 @@ class Projectile:
         
     def spawn(self,origin:tuple,rotation:float=0,target=None):
 
+        self.speed=self.startSpeed
+        #print(self)
+        self.animation=Animation(self.sprites,100)
+        self.animation.start(self.x,self.y,True)
         self.active=True
         self.target=target
         self.x,self.y=origin[0]+self.offset[0],origin[1]+self.offset[1]
@@ -333,6 +337,7 @@ class Projectile:
         self.my/=scale[1]
         self.mx+=random.choice(range(-self.accuracy,self.accuracy))
         self.my+=random.choice(range(-self.accuracy,self.accuracy))
+        
 
         if self.shootMouse or self.target:
             #print('moude')
@@ -363,44 +368,55 @@ class Projectile:
         #del self
     def update(self,screen:pygame.Surface,rects:list[pygame.Rect]|None=None):
         '''Run each frame to make projectiles move. You can optionally include a list of rects to check for collisions'''
-        self.speed+=self.acceleration
-        self.x+=self.speed*self.xAcc
-        self.y+=self.speed*self.yAcc
-        self.rect.topleft=(self.x,self.y)
-        if self.sprites:
-            self.frame, self.startTime,self.done=animation(self.sprites,200,screen,self.x-self.width/2-12,self.y-self.height/2-12,self.startTime,self.frame)
-        else:
-            self.projSurf.set_colorkey((0,0,0))
-            screen.blit(self.projSurf,(self.x-self.width/2,self.y-self.height/2))
-        #screen.blit(self.projSurf,(self.x-self.projSurfCopy.get_width()/2,self.y-self.projSurfCopy.get_height()/2))
-        if rects:
-            collision=self.rect.collidelist(rects)
-            if rects[collision] in self.immune:
-                collision=-1
-            if collision!=-1:
-                if self.pierce>=1:
-                    self.pierce-=1
-                else:
-                    self.lifetime=0
         
-        self.lifetime-=1
-        #print(self.lifetime)
-        if self.lifetime<=0:
-            self.active=False
-            self.speed=self.startSpeed
-            #print(self)
-            #print(gc.get_referrers(self)[1:])
-            #print(sys.getsizeof(math.pi))
-            if not self.sprites:
+        if self.active:
+            #print(pygame.time.get_ticks())
+            self.speed+=self.acceleration
+            self.x+=self.speed*self.xAcc
+            self.y+=self.speed*self.yAcc
+            self.rect.topleft=(self.x,self.y)
+            #print(self.x,self.y)
+            if self.sprites:
+                self.animation.move(self.x,self.y)
+                #self.frame, self.startTime,self.done=animation(self.sprites,200,screen,self.x-self.width/2-12,self.y-self.height/2-12,self.startTime,self.frame)
+            else:
+                self.projSurf.set_colorkey((0,0,0))
+                screen.blit(self.projSurf,(self.x-self.width/2,self.y-self.height/2))
+            #screen.blit(self.projSurf,(self.x-self.projSurfCopy.get_width()/2,self.y-self.projSurfCopy.get_height()/2))
+            if rects:
+                collision=self.rect.collidelist(rects)
+                if rects[collision] in self.immune:
+                    collision=-1
+                if collision!=-1:
+                    if self.pierce>=1:
+                        self.pierce-=1
+                    else:
+                        self.lifetime=0
+
+            self.lifetime-=1
+            #print(self.lifetime)
+            if self.lifetime<=0:
+                self.active=False
+                self.speed=self.startSpeed
+                #print(self)
+                #print(gc.get_referrers(self)[1:])
+                #print(sys.getsizeof(math.pi))
+                #if not self.sprites:
+                try:
+                    activeAnimations.remove(self.animation)
+                except:
+                    pass
                 liveProjectiles.remove(self)
-            self.lifetime=self.maxLifetime
-            #print(gc.get_referrers(self)[1:])
-            #print(sys.getrefcount(self))
-            #del self.projSurf
-            #del self.projSurfCopy
-            #del self
-        if rects:
-            return collision   
+                self.lifetime=self.maxLifetime
+                #print(gc.get_referrers(self)[1:])
+                #print(sys.getrefcount(self))
+                #del self.projSurf
+                #del self.projSurfCopy
+                #del self
+            if rects:
+                return collision   
+    def __str__(self) -> str:
+        return f'Speed: {self.speed} startSpeed: {self.startSpeed} acel: {self.acceleration}'
 class Animation:
     def __init__(self,moveList,frameDelay):
         self.moveList=moveList
@@ -408,11 +424,14 @@ class Animation:
         self.startTime=0
         self.frame=0
         self.x,self.y=0,0
-    def start(self,x,y):
+    def start(self,x,y,loop=False):
         self.x,self.y=x,y
+        self.loop=loop
         self.startTime=pygame.time.get_ticks()
         activeAnimations.append(self)
-    def update(self,screen):
+    def update(self,screen:pygame.Surface,x:int|float|None=None,y:int|float|None=None):
+        if x is not None and y is not None:
+            self.x,self.y=x,y
         currentTime = pygame.time.get_ticks()
 
         if currentTime - self.startTime >= self.frameDelay:
@@ -420,13 +439,19 @@ class Animation:
             self.startTime = currentTime
         if self.frame>=len(self.moveList):
             self.frame=0
+            if self.loop:
+                self.start(self.x,self.y,True)
             activeAnimations.remove(self)
             return
         try:
             screen.blit(self.moveList[self.frame],(self.x,self.y))
         except Exception as e:
+
             print(e)
             print(self.frame)
+    def move(self,x,y):
+        "Move the animation to given coordinates"
+        self.x,self.y=x,y
 def animation(moveList:list,frameDelay:int,screen:pygame.Surface,x,y,startTime:int,frame:int):
     """DEPRECATED."""
     print('Please use the Animation class for animations')
@@ -570,7 +595,7 @@ def autoWrap(text:str,width:int,font,textColor, stopAtWhiteSpace=False):
     if line!='':
         lines.append(font.render(line,True,textColor))
     return lines
-def getProjectiles():
+def getProjectiles()-> list[Projectile]:
     return liveProjectiles
 def updateAnimations(screen):
     for animation in activeAnimations:

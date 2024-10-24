@@ -29,7 +29,7 @@ def create(type):
                 realRecipe.append(None)
             else:
                 realRecipe.append(int(slot.get()))
-        recipes.append({"Id":len(recipes),"Name":recipeName.get(),"Recipe":realRecipe.copy(),"Output":int(output.get()),"Shapeless":shapeless.get(),"Count":int(count.get()),"Requires":requires.get() if requires.get()>=0 else None,'Type':'crafting'})
+        recipes.append({"Id":len(recipes),"Name":recipeName.get(),"Recipe":realRecipe.copy(),"Output":int(output.get()),"Shapeless":shapeless.get(),"Count":int(count.get()),"Requires":requires.get() if requires.get()>=0 else None,'type':'crafting'})
         recIdInd.configure(True,text=f'This recipe\'s id will be: {len(recipes)}')
         realRecipe.clear()
         print(recipes)

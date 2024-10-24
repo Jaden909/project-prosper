@@ -42,15 +42,27 @@ class Item:
                     #print('joun was set')
                 else:
                     self.canBePlaced=None
+                if 'lscript' in self.tags:
+                    self.lscript=compile(open(PurePath(f"scripts",f"{self.tags['lscript']}")).read(),PurePath(f"scripts",f"{self.tags['lscript']}"),'exec')
+                else:
+                    self.lscript=None
+                if 'rscript' in self.tags:
+                    self.rscript=compile(open(PurePath(f"scripts",f"{self.tags['rscript']}")).read(),PurePath(f"scripts",f"{self.tags['rscript']}"),'exec')
+                else:
+                    self.rscript=None
             except Exception as e:
                 print(f'Loading tags of {self.name} (Id:{self.itemId}) failed. Item will have no tags.')
                 print(f'The error was: {e}')
                 self.tags=[]
                 self.holdScript=None
                 self.canBePlaced=None
+                self.lscript=None
+                self.rscript=None
         except: 
             self.tags=[] 
             self.holdScript=None
+            self.lscript=None
+            self.rscript=None
         try:
             self.tooltip
         except:

@@ -9,13 +9,22 @@ class Obstacle:
             self.dropsItem=self.data['DropsItem']
             self.isEntrance=self.data['IsEntrance']
             self.scriptFile=self.data['Script']
-           # print(self.scriptFile)
+            # print(self.scriptFile)
             self.blockMovement=self.data['BlockMovement']
             self.sprite=PurePath(*self.data['Sprite'])
+            
             try:
                 obCache[self.type]
             except KeyError:
-                obCache[self.type]=pygame.image.load(self.sprite).convert_alpha()
+                image=pygame.Surface((64,64))
+                image.fill((254,0,0))
+                image.set_colorkey((254,0,0))
+                image.set_clip(None)
+                if self.type!='tree':
+                    image.blit(pygame.image.load(self.sprite).convert_alpha(),(0,0))
+                else:
+                    image.blit(pygame.image.load(self.sprite).convert_alpha(),(-15,0))
+                obCache[self.type]=image
             #print(self.data['Data'])
             self.obData=copy.deepcopy(self.data['Data'])
             #print(sys.getsizeof(self.sprite))  
@@ -119,3 +128,18 @@ class Obstacle:
         if self.script is not None:
             #print('exec')
             exec(compile(self.script,self.scriptFile,'exec'),globals())
+    def loadSprites(self):
+        if self.type!='none':
+            try:
+                obCache[self.type]
+            except KeyError:
+                image=pygame.Surface((64,64))
+                image.fill((254,0,0))
+                image.set_colorkey((254,0,0))
+                image.set_clip(None)
+                #print(self.sprite)
+                if self.type!='tree':
+                    image.blit(pygame.image.load(self.sprite).convert_alpha(),(0,0))
+                else:
+                    image.blit(pygame.image.load(self.sprite).convert_alpha(),(-15,0))
+                obCache[self.type]=image

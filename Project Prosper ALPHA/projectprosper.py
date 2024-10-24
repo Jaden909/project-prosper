@@ -4,7 +4,7 @@ import pygame,PyEngine,random,time as realTime,ctypes,os,sys,threading,pickle,co
 from pathlib import PurePath
 from research import research
 if sys.platform=='win32':
-    ctypes.windll.shcore.SetProcessDpiAwareness(0)
+    ctypes.windll.shcore.SetProcessDpiAwareness(0) #Stops Windows from automatically resizing the window
 #EXPERIMENTAL SCALING
 SCALE=(1,1)
 #Determines how broken old saves are: Whole number changes break saves completely, decimal number changes don't include all new game content. Ex: version 1 would completely break version 0 saves, while version 0.1 would only prevent some new content from appearing
@@ -33,74 +33,39 @@ pygame.mixer_music.load(PurePath('sfx','test2.wav'))
 #pygame.mixer.Sound(pydub.effects.speedup(d,random.choice(range(90,110))/100).export(format='wav')).play()
 #print(type(d))
 
+'''
+NOTES
+> Fixed bug in itemTool causing recipes created with it to crash the game
+> PyEngine added Animation.move() to move an animation while it is still playing
+> Added Pumpkins which can be carved*
+> Added skeletons which drop bones*
+> Added bones which be thrown to do damage
+> PyEngine fixed bug where animated projectiles were perpetually speeding up (actually had nothing to do with its speed or acceleration)
+> Changed how the game keeps track of events to be more expandable
+* Only availible during the halloween event running from October 15th to October 31st
 
-# NOTES
-# bow responds to infinity
-# 
-# 
-# PyEngine 
-# 
-# 
-# PyEngine 
-# 
-# 
-# 
-# 
-# 
-# 
-
-# 
-
-# 
-# 
-# 
-
-# Item Tool:
-# 
-# 
-# Current limits:
-# 
-# 
-
-# 
-# 
-# 
-#
-#
-#
-#
-#
-# TODO: Set mute var to True
-# 
-
-
-#PROBLEMS
-# 
-# 
-# 
-# 
-# Furnace visual needs fixed
-
-#Future
-#Load Game screen
-#weather
-#sounds/ambience
-#Load game screen
-#Animate player
-
-#only blit updated areas of screen
-
+TODO: Set mute var to True
+PROBLEMS
+> Furnace visual needs fixed
+> Ob collison persists
+Future
+> Load Game screen
+> weather
+> sounds/ambience
+> Load game screen
+> Animate player
+> Use blits for tiles
+> only blit updated areas of screen
+'''
 #Command Ideas
 #/spawn
 #/tile- get tile data
 
-#252x28
-
 #Seasonal Events
 currentTime=realTime.localtime()
 eventActive=False
-xmas=False
-
+#xmas=False
+events={'xmas':False,'halloween':False}
 
 tiles=[]
 #print(currentTime[1],currentTime[2])
@@ -108,9 +73,13 @@ if currentTime[1]==12 and currentTime[2]==1:
     eventItems=[14]
     eventActive=True
 elif currentTime[1]==12 and currentTime[2] in range(15,26):
-    xmas=True
+    events['xmas']=True
     eventActive=True
     eventItems=[17]
+elif currentTime[1]==10 and currentTime[2] in range(15,32):
+    events['halloween']=True
+    eventActive=True
+    eventItems=[]
 def emuSeason(items):
     global eventActive,eventItems
     eventActive=True
@@ -192,7 +161,7 @@ exec(compile(open(PurePath('core','Structure.py')).read(),'Structure.py','exec')
 newsOverlay=pygame.image.load(PurePath('misc','nightOverlay.png'))
 unknown=pygame.image.load(PurePath('items','unknown.png'))
 newsOverlay.set_alpha(200)
-ver=PyEngine.TextBox('Project Prosper ALPHA (Summer Update)',0,487,25,410,'coure.fon',15,False,False,'black',(251, 182, 104),(155, 82, 0),2,(5,5)) 
+ver=PyEngine.TextBox('Project Prosper ALPHA (Halloween Update)',0,487,25,410,'coure.fon',15,False,False,'black',(251, 182, 104),(155, 82, 0),2,(5,5)) 
 #Main Menu______________________________________________________________________________________________________________________________________________________________________________________
 def newGameToggle():
     global newGameStart
@@ -222,7 +191,7 @@ def notNews():
     global newsOpen
     newsOpen=False
 if not fastStart:
-    if not xmas:
+    if not events['xmas']:
         mainMenuImg=pygame.image.load(PurePath('misc','menu','mainMenu.png'))
         projectImg=pygame.image.load(PurePath('misc','menu','project.png'))
     else:
@@ -270,6 +239,9 @@ if not fastStart:
                         print('WARNING: Loading old save. Not all new content will be availible')
                     elif meta['version']>saveVersion:
                         print('WARNING: Loading new save in old version. THIS IS VERY LIKELY TO CAUSE CRASHES AND SAVE CORRUPTIONS!')
+                    for tile in tiles:
+                        for obstacle in tile.obstacles:
+                            obstacle.loadSprites()
                     #print(levelMap,tiles,structures)
                     #newGameStart=True
                     PyEngine.disableAll()
@@ -479,7 +451,7 @@ electricity=0
 ii=0
 
 line1,line2,line3='','',''
-time=0
+time=200
 darker,lighter=True,False
 playerImg=pygame.image.load(PurePath('biomes','bigPlayer.png'))
 playerImgI=pygame.image.load(PurePath('biomes','bigPlayerI.png'))
@@ -494,13 +466,16 @@ commands=PyEngine.load(PurePath('data','commands.json'))
 projectiles=PyEngine.load(PurePath('data','projectiles.json'))
 
 for projectile in projectiles:
-    projectilePools[projectile['Name']]=[PyEngine.Projectile(projectile['width'],projectile['height'],projectile['speed'],projectile['acceleration'],projectile['lifetime'],projectile['shootMouse'],PurePath(*projectile['sprite']),offset=projectile['offset'],damage=projectile['damage'],accuracy=projectile['accuracy'])for i in range(projectile['poolCount'])]
+    if projectile['sprites']==1:
+        projectilePools[projectile['Name']]=[PyEngine.Projectile(projectile['width'],projectile['height'],projectile['speed'],projectile['acceleration'],projectile['lifetime'],projectile['shootMouse'],PurePath(*projectile['sprite']),offset=projectile['offset'],damage=projectile['damage'],accuracy=projectile['accuracy'])for i in range(projectile['poolCount'])]
+    else:
+        projectilePools[projectile['Name']]=[PyEngine.Projectile(projectile['width'],projectile['height'],projectile['speed'],projectile['acceleration'],projectile['lifetime'],projectile['shootMouse'],PyEngine.loadSpriteSheet(PurePath(*projectile['sprite']),projectile['width'],projectile['sprites']),offset=projectile['offset'],damage=projectile['damage'],accuracy=projectile['accuracy'])for i in range(projectile['poolCount'])]
 #print([projectileObjs])
 #0-17 Normal slots, 18-23 hotbar slots, 24+ crafting slots,34-36 furnace slots,37-51 chest slots
 #Debug Inv
-#inventory=[{'Slot':0,'Item':12,'Amount':5},{'Slot':1,'Item':20,'Amount':1},{'Slot':2,'Item':8,'Amount':1},{'Slot':3,'Item':26,'Amount':1},{'Slot':4,'Item':28,'Amount':1},{'Slot':5,'Item':39,'Amount':1},{'Slot':6,'Item':40,'Amount':4},{'Slot':7,'Item':10,'Amount':1},{'Slot':8,'Item':41,'Amount':1},{'Slot':9,'Item':42,'Amount':1},{'Slot':10,'Item':1,'Amount':64},{'Slot':11,'Item':3,'Amount':64},{'Slot':12,'Item':54,'Amount':1},{'Slot':13,'Item':None,'Amount':0},{'Slot':14,'Item':None,'Amount':0},{'Slot':15,'Item':None,'Amount':0},{'Slot':16,'Item':None,'Amount':0},{'Slot':17,'Item':None,'Amount':0},{'Slot':18,'Item':None,'Amount':0},{'Slot':19,'Item':None,'Amount':0},{'Slot':20,'Item':None,'Amount':0},{'Slot':21,'Item':None,'Amount':0},{'Slot':22,'Item':None,'Amount':0},{'Slot':23,'Item':None,'Amount':0},{'Slot':24,'Item':None,'Amount':0},{'Slot':25,'Item':None,'Amount':0},{'Slot':26,'Item':None,'Amount':0},{'Slot':27,'Item':None,'Amount':0},{'Slot':28,'Item':None,'Amount':0},{'Slot':29,'Item':None,'Amount':0},{'Slot':30,'Item':None,'Amount':0},{'Slot':31,'Item':None,'Amount':0},{'Slot':32,'Item':None,'Amount':0},{'Slot':33,'Item':None,'Amount':0},{'Slot':34,'Item':None,'Amount':0},{'Slot':35,'Item':None,'Amount':0},{'Slot':36,'Item':None,'Amount':0},{'Slot': 37, 'Item': None, 'Amount': 0}, {'Slot': 38, 'Item': None, 'Amount': 0}, {'Slot': 39, 'Item': None, 'Amount': 0}, {'Slot': 40, 'Item': None, 'Amount': 0}, {'Slot': 41, 'Item': None, 'Amount': 0}, {'Slot': 42, 'Item': None, 'Amount': 0}, {'Slot': 43, 'Item': None, 'Amount': 0}, {'Slot': 44, 'Item': None, 'Amount': 0}, {'Slot': 45, 'Item': None, 'Amount': 0}, {'Slot': 46, 'Item': None, 'Amount': 0}, {'Slot': 47, 'Item': None, 'Amount': 0}, {'Slot': 48, 'Item': None, 'Amount': 0}, {'Slot': 49, 'Item': None, 'Amount': 0}, {'Slot': 50, 'Item': None, 'Amount': 0}, {'Slot': 51, 'Item': None, 'Amount': 0}]
+inventory=[{'Slot':0,'Item':12,'Amount':5},{'Slot':1,'Item':20,'Amount':1},{'Slot':2,'Item':8,'Amount':1},{'Slot':3,'Item':26,'Amount':1},{'Slot':4,'Item':28,'Amount':1},{'Slot':5,'Item':39,'Amount':1},{'Slot':6,'Item':40,'Amount':4},{'Slot':7,'Item':10,'Amount':1},{'Slot':8,'Item':41,'Amount':1},{'Slot':9,'Item':42,'Amount':1},{'Slot':10,'Item':1,'Amount':64},{'Slot':11,'Item':3,'Amount':64},{'Slot':12,'Item':54,'Amount':1},{'Slot':13,'Item':59,'Amount':64},{'Slot':14,'Item':None,'Amount':0},{'Slot':15,'Item':None,'Amount':0},{'Slot':16,'Item':None,'Amount':0},{'Slot':17,'Item':None,'Amount':0},{'Slot':18,'Item':None,'Amount':0},{'Slot':19,'Item':None,'Amount':0},{'Slot':20,'Item':None,'Amount':0},{'Slot':21,'Item':None,'Amount':0},{'Slot':22,'Item':None,'Amount':0},{'Slot':23,'Item':None,'Amount':0},{'Slot':24,'Item':None,'Amount':0},{'Slot':25,'Item':None,'Amount':0},{'Slot':26,'Item':None,'Amount':0},{'Slot':27,'Item':None,'Amount':0},{'Slot':28,'Item':None,'Amount':0},{'Slot':29,'Item':None,'Amount':0},{'Slot':30,'Item':None,'Amount':0},{'Slot':31,'Item':None,'Amount':0},{'Slot':32,'Item':None,'Amount':0},{'Slot':33,'Item':None,'Amount':0},{'Slot':34,'Item':None,'Amount':0},{'Slot':35,'Item':None,'Amount':0},{'Slot':36,'Item':None,'Amount':0},{'Slot': 37, 'Item': None, 'Amount': 0}, {'Slot': 38, 'Item': None, 'Amount': 0}, {'Slot': 39, 'Item': None, 'Amount': 0}, {'Slot': 40, 'Item': None, 'Amount': 0}, {'Slot': 41, 'Item': None, 'Amount': 0}, {'Slot': 42, 'Item': None, 'Amount': 0}, {'Slot': 43, 'Item': None, 'Amount': 0}, {'Slot': 44, 'Item': None, 'Amount': 0}, {'Slot': 45, 'Item': None, 'Amount': 0}, {'Slot': 46, 'Item': None, 'Amount': 0}, {'Slot': 47, 'Item': None, 'Amount': 0}, {'Slot': 48, 'Item': None, 'Amount': 0}, {'Slot': 49, 'Item': None, 'Amount': 0}, {'Slot': 50, 'Item': None, 'Amount': 0}, {'Slot': 51, 'Item': None, 'Amount': 0}]
 #Real Inv
-inventory=[{'Slot':0,'Item':None,'Amount':0},{'Slot':1,'Item':None,'Amount':0},{'Slot':2,'Item':None,'Amount':0},{'Slot':3,'Item':None,'Amount':0},{'Slot':4,'Item':None,'Amount':0},{'Slot':5,'Item':None,'Amount':0},{'Slot':6,'Item':None,'Amount':0},{'Slot':7,'Item':None,'Amount':0},{'Slot':8,'Item':None,'Amount':0},{'Slot':9,'Item':None,'Amount':0},{'Slot':10,'Item':None,'Amount':0},{'Slot':11,'Item':None,'Amount':0},{'Slot':12,'Item':None,'Amount':0},{'Slot':13,'Item':None,'Amount':0},{'Slot':14,'Item':None,'Amount':0},{'Slot':15,'Item':None,'Amount':0},{'Slot':16,'Item':None,'Amount':0},{'Slot':17,'Item':None,'Amount':0},{'Slot':18,'Item':None,'Amount':0},{'Slot':19,'Item':None,'Amount':0},{'Slot':20,'Item':None,'Amount':0},{'Slot':21,'Item':None,'Amount':0},{'Slot':22,'Item':None,'Amount':0},{'Slot':23,'Item':None,'Amount':0},{'Slot':24,'Item':None,'Amount':0},{'Slot':25,'Item':None,'Amount':0},{'Slot':26,'Item':None,'Amount':0},{'Slot':27,'Item':None,'Amount':0},{'Slot':28,'Item':None,'Amount':0},{'Slot':29,'Item':None,'Amount':0},{'Slot':30,'Item':None,'Amount':0},{'Slot':31,'Item':None,'Amount':0},{'Slot':32,'Item':None,'Amount':0},{'Slot':33,'Item':None,'Amount':0}]
+#inventory=[{'Slot':0,'Item':None,'Amount':0},{'Slot':1,'Item':None,'Amount':0},{'Slot':2,'Item':None,'Amount':0},{'Slot':3,'Item':None,'Amount':0},{'Slot':4,'Item':None,'Amount':0},{'Slot':5,'Item':None,'Amount':0},{'Slot':6,'Item':None,'Amount':0},{'Slot':7,'Item':None,'Amount':0},{'Slot':8,'Item':None,'Amount':0},{'Slot':9,'Item':None,'Amount':0},{'Slot':10,'Item':None,'Amount':0},{'Slot':11,'Item':None,'Amount':0},{'Slot':12,'Item':None,'Amount':0},{'Slot':13,'Item':None,'Amount':0},{'Slot':14,'Item':None,'Amount':0},{'Slot':15,'Item':None,'Amount':0},{'Slot':16,'Item':None,'Amount':0},{'Slot':17,'Item':None,'Amount':0},{'Slot':18,'Item':None,'Amount':0},{'Slot':19,'Item':None,'Amount':0},{'Slot':20,'Item':None,'Amount':0},{'Slot':21,'Item':None,'Amount':0},{'Slot':22,'Item':None,'Amount':0},{'Slot':23,'Item':None,'Amount':0},{'Slot':24,'Item':None,'Amount':0},{'Slot':25,'Item':None,'Amount':0},{'Slot':26,'Item':None,'Amount':0},{'Slot':27,'Item':None,'Amount':0},{'Slot':28,'Item':None,'Amount':0},{'Slot':29,'Item':None,'Amount':0},{'Slot':30,'Item':None,'Amount':0},{'Slot':31,'Item':None,'Amount':0},{'Slot':32,'Item':None,'Amount':0},{'Slot':33,'Item':None,'Amount':0}]
 def getSlot(slots):
     global slotHover
     #print(slots)
@@ -996,7 +971,7 @@ def addStack(slot,item,amount):
         inventory[slot]['Amount']+=amount
 def syncInvs(inv,slots=None):
     #Furnace Sync
-    print(inv,'smeltInv' in globals())
+    #print(inv,'smeltInv' in globals())
     global smeltInv,chestInv
     if 'smeltInv' in globals() and inv=='furnace':
         for slot in inventory[34:37]:
@@ -1352,7 +1327,7 @@ while __name__=='__main__':
                     invOpen=False
                 elif not invOpen and not uiQueue:
                     invOpen=True
-                print(closeQueue)
+                #print(closeQueue)
                 for command in closeQueue:
                     command()
                 
@@ -1419,8 +1394,9 @@ while __name__=='__main__':
                 if currentItem['Item']is not None:
                     if getItem(currentItem['Item']).type=='Tool':
                         getItem(currentItem['Item']).lclick()
-                        
-                        
+                if getItem(currentItem['Item']).type=='Item':       
+                    if getItem(currentItem['Item']).lscript is not None:
+                        exec(getItem(currentItem['Item']).lscript)    
             if event.dict['button']==3:
                 for obstacle in obstacles:
                     obData=obstacle.checkCollisionDamage(mouseRect,False,False,False)
@@ -1621,7 +1597,7 @@ while __name__=='__main__':
                     smelting=True
                     currentRecipe=recipe
             if smeltDone:  
-                print('grgrg')
+                #print('grgrg')
                 smeltDone=False      
                 inventory[36]['Item']=currentRecipe.output
                 inventory[36]['Amount']+=currentRecipe.count
